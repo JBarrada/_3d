@@ -68,7 +68,7 @@ Vector Vector::norm() {
 }
 
 void Vector::print() {
-	printf("%4.1f, %4.1f, %4.1f\n", this->x, this->y, this->z);
+	printf("%5.2f, %5.2f, %5.2f\n", this->x, this->y, this->z);
 }
 
 void swap(Vector* a, Vector* b) {

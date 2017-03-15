@@ -7,7 +7,7 @@ ThreeD::ThreeD() {
 void ThreeD::init(Matrix p, Matrix v, double render_w, double render_h) {
 	p_matrix = p;
 	v_matrix = v;
-	pv_matrix = (p_matrix * v_matrix);
+	pv_matrix = (v_matrix * p_matrix);
 
 	this->render_w = render_w;
 	this->render_h = render_h;
@@ -15,21 +15,21 @@ void ThreeD::init(Matrix p, Matrix v, double render_w, double render_h) {
 
 void ThreeD::update_v_matrix(Matrix v) {
 	v_matrix = v;
-	pv_matrix = v_matrix * p_matrix;
+	pv_matrix = (v * p_matrix);
 }
 
 void ThreeD::update_p_matrix(Matrix p) {
 	p_matrix = p;
-	pv_matrix = v_matrix * p_matrix;
+	pv_matrix = (v_matrix * p);
 }
 
 Vector ThreeD::get_projected(Vector a) {
 	Matrix m(a);
-	m *= pv_matrix;
-	Vector p_v = m.get_vector();
+	Matrix m_v = m * pv_matrix;
+	Vector p_v = m_v.get_vector();
 	
-	if (m.x[3] != 1) {
-		p_v /= m.x[3];
+	if (m_v.x[3] != 1) {
+		p_v /= m_v.x[3];
 	}
 	
 	p_v.x = dmin(SCREEN_W - 1, (p_v.x + 1) * 0.5 * SCREEN_W);
@@ -77,6 +77,7 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
 	if (p2.y > p1.y) swap(&p1, &p2);
 	if (p3.y > p2.y) swap(&p2, &p3);
 	
+	
 	if (p2.y == p3.y) {
 		bft(p1, p2, p3, c);
 	} else if (p1.y == p2.y) {
@@ -116,11 +117,15 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 	for (int i=0; i < m.points_count; i++) {
 		points_p[i] = get_projected(m.points[i]);
 	}
+	
 	/*
 	// todo get angle to camera so we can skip certain triangles
 	double camera_angles[m.normals_count];
 	for (int i=0; i < m.normals_count; i++) {
 		Matrix normal(m.normals[i]);
+		// transform
+		Vector transformed_normal = normal.get_vector();
+		
 		
 	}
 	*/

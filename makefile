@@ -1,7 +1,7 @@
 CFLAGS=
 LIBS=-Iinclude -lfreeglut -lopengl32
 
-OBJFILES = main.o matrix.o vector.o math.o threed.o gfx.o
+OBJFILES = main.o matrix.o vector.o math.o threed.o gfx.o model.o string_tools.o
 
 all: clean main.exe
 

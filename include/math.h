@@ -12,6 +12,7 @@ double tan(double x);
 double atan(double x);
 
 double fabs(double x);
+double pow(double x, double e);
 double sqrt(const double x);
 double interpolate(double start, double end, double pos);
 

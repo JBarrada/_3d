@@ -5,7 +5,6 @@ uint32_t screen_buffer[SCREEN_W*SCREEN_H];
 
 void (*draw_function)();
 
-
 void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y)) {
 	draw_function = draw;
 	
@@ -28,6 +27,22 @@ void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key
 	glutKeyboardFunc(keyboard);
 	
 	glutMainLoop();
+}
+
+uint8_t get_byte_color(uint8_t r, uint8_t g, uint8_t b) {
+	return ((r/32) << 5) | ((g/32) << 2) | (b/64);
+}
+
+uint8_t interpolate_color(uint8_t c, double value) {
+	uint8_t r = (c >> 5) & 7;
+	uint8_t g = (c >> 2) & 7;
+	uint8_t b = (c >> 0) & 3;
+	
+	double rd = 1.0 / (double)r;
+	double gd = 1.0 / (double)g;
+	double bd = 1.0 / (double)b;
+	
+	return get_byte_color((uint8_t)value*rd, (uint8_t)value*gd, (uint8_t)value*bd);
 }
 
 void render() {

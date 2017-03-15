@@ -27,6 +27,14 @@ double fabs(double x) {
 		return x;
 }
 
+double pow(double x, double e) {
+	double value = 1;
+	for (int i=0; i < e; i++) {
+		value *= x;
+	}
+	return value;
+}
+
 double sqrt(const double x) { 
 	double n = x / 2.0;
 	double last_x = 0.0; 
