@@ -13,13 +13,23 @@ void ThreeD::init(Matrix p, Matrix v, double render_w, double render_h) {
 	this->render_h = render_h;
 }
 
+void ThreeD::update_v_matrix(Matrix v) {
+	v_matrix = v;
+	pv_matrix = v_matrix * p_matrix;
+}
+
+void ThreeD::update_p_matrix(Matrix p) {
+	p_matrix = p;
+	pv_matrix = v_matrix * p_matrix;
+}
+
 Vector ThreeD::get_projected(Vector a) {
 	Matrix m(a);
-	Matrix p = pv_matrix * m;
-	Vector p_v = p.get_vector();
+	m *= pv_matrix;
+	Vector p_v = m.get_vector();
 	
-	if (p.x[3] != 1) {
-		p_v /= p.x[3];
+	if (m.x[3] != 1) {
+		p_v /= m.x[3];
 	}
 	
 	p_v.x = dmin(SCREEN_W - 1, (p_v.x + 1) * 0.5 * SCREEN_W);
@@ -101,32 +111,33 @@ void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c) {
 	}
 }
 
+void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
+	Vector points_p[m.points_count];
+	for (int i=0; i < m.points_count; i++) {
+		points_p[i] = get_projected(m.points[i]);
+	}
+	/*
+	// todo get angle to camera so we can skip certain triangles
+	double camera_angles[m.normals_count];
+	for (int i=0; i < m.normals_count; i++) {
+		Matrix normal(m.normals[i]);
+		
+	}
+	*/
+	
+	for (int i=0; i < m.triangles_count; i++) {
+		draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+	}
+}
+
+
+
 void ThreeD::clear_depth_buffer() {
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
 		depth_buffer[d] = 100.0;
 	}
 }
 
-
-Matrix look_at_camera(Vector eye, Vector target, Vector up) {
-	Vector zaxis = (target - eye).norm();
-	Vector xaxis = (up.cross(zaxis)).norm();
-	Vector yaxis = zaxis.cross(xaxis);
-	
-	double m_ox[] = {xaxis.x, yaxis.x, zaxis.x, 0,
-					xaxis.y, yaxis.y, zaxis.y, 0,
-					xaxis.z, yaxis.z, zaxis.z, 0,
-					0,0,0,1};
-	Matrix m_o(4, 4, m_ox);
-	
-	double m_tx[] = {1,0,0,0, 0,1,0,0, 0,0,1,0, -eye.x, -eye.y, -eye.z, 1};
-	Matrix m_t(4, 4, m_tx);
-	
-	return (m_t * m_o);
-	//return m_o.translated(-eye.x, -eye.y, -eye.z);
-}
-
-/*
 Matrix look_at_camera(Vector eye, Vector target, Vector up) {
 	Vector zaxis = (target - eye).norm();
 	Vector xaxis = (up.cross(zaxis)).norm();
@@ -141,7 +152,6 @@ Matrix look_at_camera(Vector eye, Vector target, Vector up) {
 
 	return m_o;
 }
-*/
 
 Matrix projection_ortho(double w, double h, double zf, double zn) {
 	double m_x[] = {1.0/w, 0, 0, 0,  0, 1.0/h, 0, 0,  0, 0, -2/(zf-zn), -(zf+zn)/(zf-zn),  0, 0, 0, 1};

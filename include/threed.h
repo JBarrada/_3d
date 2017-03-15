@@ -5,6 +5,7 @@
 #include "vector.h"
 #include "matrix.h"
 #include "math.h"
+#include "model.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -23,6 +24,9 @@ public:
 	ThreeD();
 	void init(Matrix, Matrix, double, double);
 	
+	void update_v_matrix(Matrix);
+	void update_p_matrix(Matrix);
+	
 	Vector get_projected(Vector);
 	
 	void draw_point(Vector, uint8_t);
@@ -33,7 +37,7 @@ public:
 	
 	void draw_triangle(Vector, Vector, Vector, uint8_t);
 	
-	// void draw_model_3d(Model *m);
+	void draw_model_3d(const Model&, uint8_t);
 	
 	void clear_depth_buffer();
 };
