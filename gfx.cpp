@@ -8,11 +8,21 @@ void (*draw_function)();
 void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y)) {
 	draw_function = draw;
 	
+	/*
 	for (int i=0; i<32; i++) {palette[i] = ((int)(i*2.09375)<<16) | ((int)(i*6.46875)<<8) | (int)(i*7.90625);}
 	for (int i=0; i<32; i++) {palette[i+32] = ((int)(i*0.4375)<<16) | ((int)(i*1.875)<<8) | (int)(i*7.3125);}
 	for (int i=0; i<32; i++) {palette[i+64] = ((int)(i*7.21875)<<16) | ((int)(i*7.3125)<<8) | (int)(i*3.15625);}
 	for (int i=0; i<32; i++) {palette[i+96] = ((int)(i*7.9375)<<16) | ((int)(i*4.28125)<<8) | (int)(i*1.6875);}
 	for (int i=0; i<32; i++) {palette[i+128] = ((int)(i*4.125)<<16) | ((int)(i*2.21875)<<8) | (int)(i*0.375);}
+	*/
+	
+	for (int i = 0; i < 256; i++) {
+		uint32_t r = ((i >> 5) & 7) * 64;
+		uint32_t g = ((i >> 2) & 7) * 64;
+		uint32_t b = ((i >> 0) & 3) * 32;
+		
+		palette[i] = (r << 16) | (g << 8) | b;
+	}
 	
 	char fakeParam[] = "";
 	char *fakeargv[] = { fakeParam, NULL };
@@ -38,11 +48,7 @@ uint8_t interpolate_color(uint8_t c, double value) {
 	uint8_t g = (c >> 2) & 7;
 	uint8_t b = (c >> 0) & 3;
 	
-	double rd = 1.0 / (double)r;
-	double gd = 1.0 / (double)g;
-	double bd = 1.0 / (double)b;
-	
-	return get_byte_color((uint8_t)value*rd, (uint8_t)value*gd, (uint8_t)value*bd);
+	return ((uint8_t)(value*(double)r) << 5) | ((uint8_t)(value*(double)g) << 2) | (uint8_t)(value*(double)b);
 }
 
 void render() {

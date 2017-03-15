@@ -11,8 +11,8 @@
 
 class ThreeD {
 private:
-	void tft(Vector, Vector, Vector, uint8_t);
-	void bft(Vector, Vector, Vector, uint8_t);
+	void tft(Vector, Vector, Vector, uint8_t, double, double);
+	void bft(Vector, Vector, Vector, uint8_t, double, double);
 public:
 	Matrix p_matrix;
 	Matrix v_matrix;
@@ -32,10 +32,10 @@ public:
 	void draw_point(Vector, uint8_t);
 	void draw_point_3d(Vector, uint8_t);
 	
-	void draw_line(Vector, Vector, uint8_t);
+	void draw_line(Vector, Vector, uint8_t, double, double);
 	void draw_line_3d(Vector, Vector, uint8_t);
 	
-	void draw_triangle(Vector, Vector, Vector, uint8_t);
+	void draw_triangle(Vector, Vector, Vector, uint8_t, double, double);
 	
 	void draw_model_3d(const Model&, uint8_t);
 	

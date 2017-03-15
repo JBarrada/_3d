@@ -65,7 +65,7 @@ void draw() {
 	threed.draw_line_3d((Vector){ 0.5,-0.5,-0.5}, (Vector){-0.5,-0.5,-0.5}, 20);
 	*/
 	
-	threed.draw_model_3d(test_model, 90);
+	threed.draw_model_3d(test_model, 255);
 }
 
 void load_model() {

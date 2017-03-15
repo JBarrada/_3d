@@ -54,11 +54,14 @@ void ThreeD::draw_point_3d(Vector a, uint8_t c) {
 	draw_point(p_v, c);
 }
 
-void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c) {
+void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c, double minz, double maxz) {
 	if (pa.x > pb.x) swap(&pa, &pb);
 	for (int x=(int)pa.x; x<=(int)pb.x; x++) {
 		double z = interpolate(pa.z, pb.z, (x-pa.x)/(pb.x-pa.x));
-		draw_point((Vector){x, pa.y, z}, c);
+		
+		uint8_t shade = interpolate_color(c, 1.0 - ((z - minz) / (maxz - minz)));
+		//printf("%f %d\n", val, shade);
+		draw_point((Vector){x, pa.y, z}, shade);
 	}
 }
 
@@ -69,7 +72,7 @@ void ThreeD::draw_line_3d(Vector pa, Vector pb, uint8_t c) {
 	line(p_pa.x, p_pa.y, p_pb.x, p_pb.y, c);
 }
 
-void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
+void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c, double minz, double maxz) {
 	if ((int)p1.y==(int)p2.y && (int)p1.y==(int)p3.y) return;
 	if ((int)p1.x==(int)p2.x && (int)p1.x==(int)p3.x) return;
 	
@@ -79,44 +82,51 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
 	
 	
 	if (p2.y == p3.y) {
-		bft(p1, p2, p3, c);
+		bft(p1, p2, p3, c, minz, maxz);
 	} else if (p1.y == p2.y) {
-		tft(p1, p2, p3, c);
+		tft(p1, p2, p3, c, minz, maxz);
 	} else {
 		double xi = interpolate(p3.x, p1.x, (p2.y-p3.y)/(p1.y-p3.y));
 		double zi = interpolate(p3.z, p1.z, (p2.y-p3.y)/(p1.y-p3.y));
-		bft(p1, (Vector){xi, p2.y, zi}, p2, c);
-		tft(p2, (Vector){xi, p2.y, zi}, p3, c);
+		bft(p1, (Vector){xi, p2.y, zi}, p2, c, minz, maxz);
+		tft(p2, (Vector){xi, p2.y, zi}, p3, c, minz, maxz);
 	}
 }
 
-void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
+void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double maxz) {
 	for (int y=(int)pc.y; y<=(int)pa.y; y++) {
 		double gradient = (y-(int)pc.y)/(double)((int)pa.y-(int)pc.y);
 		double x1 = interpolate(pc.x, pa.x, gradient);
 		double x2 = interpolate(pc.x, pb.x, gradient);
 		double z1 = interpolate(pc.z, pa.z, gradient);
 		double z2 = interpolate(pc.z, pb.z, gradient);
-		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c);
+		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c, minz, maxz);
 	}
 }
 
-void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c) {
+void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double maxz) {
 	for (int y=(int)pa.y; y>=(int)pb.y; y--) {
 		double gradient = ((int)pa.y-y)/(double)((int)pa.y-(int)pb.y);
 		double x1 = interpolate(pa.x, pb.x, gradient);
 		double x2 = interpolate(pa.x, pc.x, gradient);
 		double z1 = interpolate(pa.z, pb.z, gradient);
 		double z2 = interpolate(pa.z, pc.z, gradient);
-		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c);
+		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c, minz, maxz);
 	}
 }
 
 void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
+	double minz = 100.0;
+	double maxz = 0.0;
+	
 	Vector points_p[m.points_count];
 	for (int i=0; i < m.points_count; i++) {
 		points_p[i] = get_projected(m.points[i]);
+		if (points_p[i].z > maxz) maxz = points_p[i].z;
+		if (points_p[i].z < minz) minz = points_p[i].z;
 	}
+	
+	//printf("%f, %f\n", minz, maxz);
 	
 	/*
 	// todo get angle to camera so we can skip certain triangles
@@ -125,13 +135,11 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 		Matrix normal(m.normals[i]);
 		// transform
 		Vector transformed_normal = normal.get_vector();
-		
-		
 	}
 	*/
 	
 	for (int i=0; i < m.triangles_count; i++) {
-		draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+		draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c, minz, maxz);
 	}
 }
 
