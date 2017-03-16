@@ -111,7 +111,7 @@ void shade(double* depth_buffer) {
 }
 
 void toon(double* depth_buffer) {
-	double thresh = 1.001;
+	double thresh = 1.0008;
 
 	int r = 2;
 	int i, tx, ty;

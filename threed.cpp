@@ -23,6 +23,13 @@ void ThreeD::update_p_matrix(Matrix p) {
 	pv_matrix = (v_matrix * p);
 }
 
+bool ThreeD::on_screen(const Vector& v) {
+	
+	if ((v.x >= 0 && v.x < SCREEN_W) && (v.y >= 0 && v.y < SCREEN_H))
+		return true;
+	return false;
+}
+
 Vector ThreeD::get_projected(Vector a) {
 	Matrix m(a);
 	Matrix m_v = m * pv_matrix;
@@ -65,7 +72,7 @@ void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c) {
 		double z = (pa.z + pb.z) / 2.0;
 		draw_point((Vector){pa.x, pa.y, z}, c);
 	} else {
-		for (int x=pa.x; x<=pb.x; x++) {
+		for (int x=dmax(pa.x, 0); x<=dmin(pb.x, SCREEN_W); x++) {
 			double z = interpolate(pa.z, pb.z, (x-pa.x)/(pb.x-pa.x));
 			
 			draw_point((Vector){x, pa.y, z}, c);
@@ -109,7 +116,7 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
 }
 
 void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
-	for (int y=pc.y; y<=pa.y; y++) {
+	for (int y=dmax(pc.y,0); y<=dmin(pa.y, SCREEN_H); y++) {
 		double gradient = (y-pc.y)/(double)(pa.y-pc.y);
 		double x1 = interpolate(pc.x, pa.x, gradient);
 		double x2 = interpolate(pc.x, pb.x, gradient);
@@ -121,7 +128,7 @@ void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
 
 void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c) {
 	pb.y = round(pb.y);
-	for (int y=pa.y; y>=pb.y; y--) {
+	for (int y=dmin(pa.y, SCREEN_H); y>=dmax(pb.y, 0); y--) {
 		double gradient = (pa.y-y)/(double)(pa.y-pb.y);
 		double x1 = interpolate(pa.x, pb.x, gradient);
 		double x2 = interpolate(pa.x, pc.x, gradient);
@@ -162,8 +169,10 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 	
 	
 	for (int i=0; i < m.triangles_count; i++) {
-		if (camera_angles[m.triangles[i].normal] <= 0.6) {
-			draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+		if (on_screen(points_p[m.triangles[i].a]) || on_screen( points_p[m.triangles[i].b]) || on_screen(points_p[m.triangles[i].c])) {
+			if (camera_angles[m.triangles[i].normal] <= 0.6) {
+				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+			}
 		}
 	}
 }

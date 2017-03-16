@@ -29,6 +29,8 @@ public:
 	
 	Vector get_projected(Vector);
 	
+	bool on_screen(const Vector&);
+	
 	void draw_point(Vector, uint8_t);
 	void draw_point_3d(Vector, uint8_t);
 	
