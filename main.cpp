@@ -12,14 +12,15 @@
 
 ThreeD threed;
 
-Vector camera_position(10,10,1);
+Vector camera_position(30,30,1);
 double angle = 0;
-double radius = 5.0;
+double radius = 30.0;
 
 Model test_model;
+Model test_cube;
 
 void idle() {
-	
+	render();
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -51,19 +52,21 @@ void keyboard(unsigned char key, int x, int y) {
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});
 	threed.update_v_matrix(v_matrix);
 
-	render();
+	//render();
 }
 
 void draw() {
 	threed.clear_depth_buffer();
 	
 	threed.draw_model_3d(test_model, get_byte_color(255, 0, 0));
+	threed.draw_model_3d(test_cube, get_byte_color(0, 0, 255));
 	
+	shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
 }
 
-void load_model() {
-	std::ifstream ifs("test.obj", std::ios::binary | std::ios::ate);
+void load_model(char* file, Model* model) {
+	std::ifstream ifs(file, std::ios::binary | std::ios::ate);
 	std::ifstream::pos_type pos = ifs.tellg();
 	int length = pos;
 	
@@ -73,11 +76,15 @@ void load_model() {
 	
 	ifs.close();
 	
-	test_model.load_data(data, length);
+	model->load_data(data, length);
 }
 
 int main() {
-	load_model();
+	load_model("test.obj", &test_model);
+	load_model("test.obj", &test_cube);
+	
+	test_cube.transform = test_cube.transform.rotated_3d_z(1.5);
+	test_cube.transform = test_cube.transform.translated(10, 0, 0);
 	
 	Matrix p_matrix = projection_persp_gl(90.0, 100.0, 0.1, 320.0/200.0);
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});

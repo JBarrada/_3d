@@ -15,6 +15,10 @@ void Model::load_data(char* data, int length) {
 	normals_count = 0;
 	triangles_count = 0;
 	
+	double identity_x[] = {1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1};
+	Matrix identity(4, 4, identity_x);
+	transform = identity;
+	
 	int i=0;
 	while (i<length) {
 		switch (data[i]) {

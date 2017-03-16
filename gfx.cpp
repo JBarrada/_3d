@@ -3,6 +3,9 @@
 uint32_t palette[256];
 uint32_t screen_buffer[SCREEN_W*SCREEN_H];
 
+double current_minz = 5.0;
+double current_maxz = 10.0;
+
 void (*draw_function)();
 
 void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y)) {
@@ -53,6 +56,14 @@ uint8_t get_byte_color(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r/32) << 5) | ((g/32) << 2) | (b/64);
 }
 
+uint8_t get_byte_color(uint32_t color) {
+	uint8_t r = (color >> 16) & 255;
+	uint8_t g = (color >> 8) & 255;
+	uint8_t b = (color >> 0) & 255;
+	return ((r/32) << 5) | ((g/32) << 2) | (b/64);
+}
+
+
 uint8_t interpolate_color(uint8_t c, double value) {
 	uint8_t r = (c >> 5) & 7;
 	uint8_t g = (c >> 2) & 7;
@@ -77,29 +88,27 @@ void set_pixel(int x, int y, uint8_t c) {
 	}	
 }
 
-/*
-void toon(double* depth_buffer) {
+void shade(double* depth_buffer) {
+	double minz = 100.0;
+	double maxz = 0.0;
 	
-	double thresh = 1.0008;
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
-		double surrounding = 0;
-		if ((d - SCREEN_W - 1) >= 0 && (d - SCREEN_W - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W - 1)];
-		if ((d - SCREEN_W) >= 0 && (d - SCREEN_W) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W)];
-		if ((d - SCREEN_W + 1) >= 0 && (d - SCREEN_W + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W + 1)];
-		if ((d - 1) >= 0 && (d - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - 1)];
-		if ((d + 1) >= 0 && (d + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + 1)];
-		if ((d + SCREEN_W - 1) >= 0 && (d + SCREEN_W - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W - 1)];
-		if ((d + SCREEN_W) >= 0 && (d + SCREEN_W) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W)];
-		if ((d + SCREEN_W + 1) >= 0 && (d + SCREEN_W + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W + 1)];
-		
-		
-		
-		if (((surrounding / 8.0) * thresh) < depth_buffer[d]) {
-			set_pixel(d % SCREEN_W, d / SCREEN_W, get_byte_color(0,0,0));
+		if (depth_buffer[d] > maxz) maxz = depth_buffer[d];
+		if (depth_buffer[d] < minz && depth_buffer[d] != 0.0) minz = depth_buffer[d];
+	}
+	
+	current_minz += (minz - current_minz) / 2.0;
+	current_maxz += (maxz - current_maxz) / 2.0;
+	
+	// printf("minz: %f, maxz: %f\n", minz, maxz);
+	
+	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
+		if (depth_buffer[d] != 0.0) {
+			uint8_t c = interpolate_color(get_byte_color(screen_buffer[d]), ((depth_buffer[d] - current_minz) / (current_maxz - current_minz)));
+			screen_buffer[d] = palette[c];
 		}
 	}
 }
-*/
 
 void toon(double* depth_buffer) {
 	double thresh = 1.001;
