@@ -72,6 +72,13 @@ int next_numeric(char* data, int i) {
 	return i;
 }
 
+int next_char(char* data, char c, int i) {
+	while (data[i] != c) {
+		i++;
+	}
+	return i;
+}
+
 double atod(char* data) {
 	int sign = 1;
 	double value = 0;

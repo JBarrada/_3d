@@ -162,16 +162,16 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 		Matrix camera_m(camera_r);
 		Vector camera = (camera_m * transform_copy).get_vector();
 		
-		
-		
 		camera_angles[i] = ((camera.dot(transformed_normal) / (camera.length() * transformed_normal.length()))+1.0)/2.0;
+		//printf("%f\n", camera_angles[i]);
 	}
 	
 	
 	for (int i=0; i < m.triangles_count; i++) {
 		if (on_screen(points_p[m.triangles[i].a]) || on_screen( points_p[m.triangles[i].b]) || on_screen(points_p[m.triangles[i].c])) {
 			if (camera_angles[m.triangles[i].normal] <= 0.6) {
-				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+				//draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
+				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], interpolate_color(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)*2.0)));
 			}
 		}
 	}

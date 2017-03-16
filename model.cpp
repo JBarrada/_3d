@@ -86,9 +86,12 @@ void Model::load_data(char* data, int length) {
 				t.b = atoi(data+b_p_start) - 1;
 				int c_p_start = next_non_whitespace(data, b_p_start);
 				t.c = atoi(data+c_p_start) - 1;
-				
-				int n_start = next_numeric(data, c_p_start);
+
+				int n_start = next_char(data, '/', c_p_start);
+				n_start = next_char(data, '/', n_start + 1) + 1;
 				t.normal = atoi(data+n_start) - 1;
+				
+				//printf("a: %d, b: %d, c: %d, n: %d\n", t.a, t.b, t.c, t.normal);
 				
 				triangles[triangles_count] = t;
 				triangles_count++; 

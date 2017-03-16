@@ -10,6 +10,7 @@ bool is_numeric(char);
 int next_non_whitespace(char*, int);
 int next_line(char*, int);
 int next_numeric(char*, int);
+int next_char(char*, char, int);
 double atod(char*);
 int atoi(char*);
 

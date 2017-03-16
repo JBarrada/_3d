@@ -20,7 +20,7 @@ Model test_model;
 Model test_cube;
 
 void idle() {
-	render();
+	//render();
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -52,7 +52,7 @@ void keyboard(unsigned char key, int x, int y) {
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});
 	threed.update_v_matrix(v_matrix);
 
-	//render();
+	render();
 }
 
 void draw() {
