@@ -14,6 +14,7 @@ double atan(double x);
 double fabs(double x);
 double pow(double x, double e);
 double sqrt(const double x);
+int round(double d);
 double interpolate(double start, double end, double pos);
 
 double dmax(double, double);

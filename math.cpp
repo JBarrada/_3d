@@ -45,6 +45,13 @@ double sqrt(const double x) {
 	return n;
 }  
 
+int round(double d) {
+	if (d > 0)
+		return (int)(d + 0.5);
+	else
+		return (int)(d - 0.5);
+}
+
 double interpolate(double start, double end, double pos) {
 	return ((end-start)*pos) + start;
 }

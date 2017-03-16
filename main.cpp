@@ -14,6 +14,7 @@ ThreeD threed;
 
 Vector camera_position(10,10,1);
 double angle = 0;
+double radius = 5.0;
 
 Model test_model;
 
@@ -36,8 +37,16 @@ void keyboard(unsigned char key, int x, int y) {
 		angle -= 0.1;
 	}
 	
-	camera_position.x = (cos(angle) * 10.0);
-	camera_position.y = (sin(angle) * 10.0);
+	
+	if (key == 'o') {
+		radius += 0.2;
+	}
+	if (key == 'p') {
+		radius -= 0.2;
+	}
+	
+	camera_position.x = (cos(angle) * radius);
+	camera_position.y = (sin(angle) * radius);
 	
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});
 	threed.update_v_matrix(v_matrix);
@@ -48,24 +57,9 @@ void keyboard(unsigned char key, int x, int y) {
 void draw() {
 	threed.clear_depth_buffer();
 	
-	/*
-	threed.draw_point_3d((Vector){-0.5,-0.5,-0.5},20);
-	threed.draw_point_3d((Vector){-0.5, 0.5,-0.5},20);
-	threed.draw_point_3d((Vector){ 0.5, 0.5,-0.5},20);
-	threed.draw_point_3d((Vector){ 0.5,-0.5,-0.5},20);
+	threed.draw_model_3d(test_model, get_byte_color(255, 0, 0));
 	
-	threed.draw_point_3d((Vector){-0.5,-0.5,0.5},50);
-	threed.draw_point_3d((Vector){-0.5,0.5,0.5},50);
-	threed.draw_point_3d((Vector){0.5,0.5,0.5},50);
-	threed.draw_point_3d((Vector){0.5,-0.5,0.5},50);
-	
-	threed.draw_line_3d((Vector){-0.5,-0.5,-0.5}, (Vector){-0.5, 0.5,-0.5}, 20);
-	threed.draw_line_3d((Vector){-0.5, 0.5,-0.5}, (Vector){ 0.5, 0.5,-0.5}, 20);
-	threed.draw_line_3d((Vector){ 0.5, 0.5,-0.5}, (Vector){ 0.5,-0.5,-0.5}, 20);
-	threed.draw_line_3d((Vector){ 0.5,-0.5,-0.5}, (Vector){-0.5,-0.5,-0.5}, 20);
-	*/
-	
-	threed.draw_model_3d(test_model, 255);
+	toon(threed.depth_buffer);
 }
 
 void load_model() {

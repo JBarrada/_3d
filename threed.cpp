@@ -43,7 +43,7 @@ void ThreeD::draw_point(Vector a, uint8_t c) {
 		return;
 	
 	unsigned int offset = a.y*SCREEN_W+a.x;
-	if (a.z < depth_buffer[offset]) {
+	if (a.z > depth_buffer[offset]) {
 		set_pixel(a.x, a.y, c);
 		depth_buffer[offset] = a.z;
 	}
@@ -54,14 +54,36 @@ void ThreeD::draw_point_3d(Vector a, uint8_t c) {
 	draw_point(p_v, c);
 }
 
+/*
 void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c, double minz, double maxz) {
 	if (pa.x > pb.x) swap(&pa, &pb);
 	for (int x=(int)pa.x; x<=(int)pb.x; x++) {
 		double z = interpolate(pa.z, pb.z, (x-pa.x)/(pb.x-pa.x));
 		
-		uint8_t shade = interpolate_color(c, 1.0 - ((z - minz) / (maxz - minz)));
-		//printf("%f %d\n", val, shade);
+		uint8_t shade = interpolate_color(c, ((z - minz) / (maxz - minz)));
 		draw_point((Vector){x, pa.y, z}, shade);
+	}
+}
+*/
+
+void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c, double minz, double maxz) {
+	if (pa.x > pb.x) swap(&pa, &pb);
+	
+	pa.x = round(pa.x);
+	pb.x = round(pb.x);
+	pa.y = round(pa.y);
+	
+	if (pa.x == pb.x) {
+		double z = (pa.z + pb.z) / 2.0;
+		uint8_t shade = interpolate_color(c, ((z - minz) / (maxz - minz)));
+		draw_point((Vector){pa.x, pa.y, z}, shade);
+	} else {
+		for (int x=pa.x; x<=pb.x; x++) {
+			double z = interpolate(pa.z, pb.z, (x-pa.x)/(pb.x-pa.x));
+			
+			uint8_t shade = interpolate_color(c, ((z - minz) / (maxz - minz)));
+			draw_point((Vector){x, pa.y, z}, shade);
+		}
 	}
 }
 
@@ -73,13 +95,20 @@ void ThreeD::draw_line_3d(Vector pa, Vector pb, uint8_t c) {
 }
 
 void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c, double minz, double maxz) {
-	if ((int)p1.y==(int)p2.y && (int)p1.y==(int)p3.y) return;
-	if ((int)p1.x==(int)p2.x && (int)p1.x==(int)p3.x) return;
+	p1.x = round(p1.x);
+	p2.x = round(p2.x);
+	p3.x = round(p3.x);
+	
+	p1.y = round(p1.y);
+	p2.y = round(p2.y);
+	p3.y = round(p3.y);
+	
+	if (p1.y==p2.y && p1.y==(int)p3.y) return;
+	if (p1.x==p2.x && p1.x==(int)p3.x) return;
 	
 	if (p3.y > p1.y) swap(&p1, &p3);
 	if (p2.y > p1.y) swap(&p1, &p2);
 	if (p3.y > p2.y) swap(&p2, &p3);
-	
 	
 	if (p2.y == p3.y) {
 		bft(p1, p2, p3, c, minz, maxz);
@@ -94,8 +123,8 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c, double mi
 }
 
 void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double maxz) {
-	for (int y=(int)pc.y; y<=(int)pa.y; y++) {
-		double gradient = (y-(int)pc.y)/(double)((int)pa.y-(int)pc.y);
+	for (int y=pc.y; y<=pa.y; y++) {
+		double gradient = (y-pc.y)/(double)(pa.y-pc.y);
 		double x1 = interpolate(pc.x, pa.x, gradient);
 		double x2 = interpolate(pc.x, pb.x, gradient);
 		double z1 = interpolate(pc.z, pa.z, gradient);
@@ -105,8 +134,9 @@ void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double
 }
 
 void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double maxz) {
-	for (int y=(int)pa.y; y>=(int)pb.y; y--) {
-		double gradient = ((int)pa.y-y)/(double)((int)pa.y-(int)pb.y);
+	pb.y = round(pb.y);
+	for (int y=pa.y; y>=pb.y; y--) {
+		double gradient = (pa.y-y)/(double)(pa.y-pb.y);
 		double x1 = interpolate(pa.x, pb.x, gradient);
 		double x2 = interpolate(pa.x, pc.x, gradient);
 		double z1 = interpolate(pa.z, pb.z, gradient);
@@ -114,6 +144,8 @@ void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c, double minz, double
 		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c, minz, maxz);
 	}
 }
+
+
 
 void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 	double minz = 100.0;
@@ -125,21 +157,26 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 		if (points_p[i].z > maxz) maxz = points_p[i].z;
 		if (points_p[i].z < minz) minz = points_p[i].z;
 	}
+
 	
-	//printf("%f, %f\n", minz, maxz);
-	
-	/*
 	// todo get angle to camera so we can skip certain triangles
 	double camera_angles[m.normals_count];
 	for (int i=0; i < m.normals_count; i++) {
 		Matrix normal(m.normals[i]);
 		// transform
 		Vector transformed_normal = normal.get_vector();
+		
+		Matrix inv((Vector){0,0,-1});
+		Vector camera = (v_matrix * inv).get_vector();
+		
+		camera_angles[i] = ((camera.dot(transformed_normal) / (camera.length() * transformed_normal.length()))+1.0)/2.0;
 	}
-	*/
+	
 	
 	for (int i=0; i < m.triangles_count; i++) {
-		draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c, minz, maxz);
+		if (camera_angles[m.triangles[i].normal] <= 0.6) {
+			draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c, minz, maxz);
+		}
 	}
 }
 
@@ -147,7 +184,7 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 
 void ThreeD::clear_depth_buffer() {
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
-		depth_buffer[d] = 100.0;
+		depth_buffer[d] = 0.0;
 	}
 }
 

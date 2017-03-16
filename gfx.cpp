@@ -16,13 +16,23 @@ void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key
 	for (int i=0; i<32; i++) {palette[i+128] = ((int)(i*4.125)<<16) | ((int)(i*2.21875)<<8) | (int)(i*0.375);}
 	*/
 	
+	
 	for (int i = 0; i < 256; i++) {
-		uint32_t r = ((i >> 5) & 7) * 64;
-		uint32_t g = ((i >> 2) & 7) * 64;
-		uint32_t b = ((i >> 0) & 3) * 32;
+		uint32_t r = ((i >> 5) & 7) * 32;
+		uint32_t g = ((i >> 2) & 7) * 32;
+		uint32_t b = ((i >> 0) & 3) * 64;
 		
 		palette[i] = (r << 16) | (g << 8) | b;
 	}
+	/*
+	for (int i = 0; i < 256; i++) {
+		//uint32_t r = ((i >> 5) & 7) * 32;
+		//uint32_t g = ((i >> 2) & 7) * 32;
+		//uint32_t b = ((i >> 0) & 3) * 64;
+		
+		palette[i] = (i << 16) | (i << 8) | i;
+	}
+	*/
 	
 	char fakeParam[] = "";
 	char *fakeargv[] = { fakeParam, NULL };
@@ -52,7 +62,7 @@ uint8_t interpolate_color(uint8_t c, double value) {
 }
 
 void render() {
-	memset(screen_buffer, 0, sizeof(screen_buffer));
+	memset(screen_buffer, get_byte_color(60,60,60), sizeof(screen_buffer));
 	
 	draw_function();
 	
@@ -65,6 +75,66 @@ void set_pixel(int x, int y, uint8_t c) {
 	if (x<SCREEN_W & y<SCREEN_H & x>=0 & y>=0) {
 		screen_buffer[(y*SCREEN_W+x)] = palette[c];
 	}	
+}
+
+/*
+void toon(double* depth_buffer) {
+	
+	double thresh = 1.0008;
+	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
+		double surrounding = 0;
+		if ((d - SCREEN_W - 1) >= 0 && (d - SCREEN_W - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W - 1)];
+		if ((d - SCREEN_W) >= 0 && (d - SCREEN_W) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W)];
+		if ((d - SCREEN_W + 1) >= 0 && (d - SCREEN_W + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - SCREEN_W + 1)];
+		if ((d - 1) >= 0 && (d - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d - 1)];
+		if ((d + 1) >= 0 && (d + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + 1)];
+		if ((d + SCREEN_W - 1) >= 0 && (d + SCREEN_W - 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W - 1)];
+		if ((d + SCREEN_W) >= 0 && (d + SCREEN_W) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W)];
+		if ((d + SCREEN_W + 1) >= 0 && (d + SCREEN_W + 1) < SCREEN_W*SCREEN_H) surrounding += depth_buffer[(d + SCREEN_W + 1)];
+		
+		
+		
+		if (((surrounding / 8.0) * thresh) < depth_buffer[d]) {
+			set_pixel(d % SCREEN_W, d / SCREEN_W, get_byte_color(0,0,0));
+		}
+	}
+}
+*/
+
+void toon(double* depth_buffer) {
+	double thresh = 1.001;
+
+	int r = 2;
+	int i, tx, ty;
+	int r2 = r * r;
+	int area = r2 << 2;
+	int rr = r << 1;
+	
+	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
+		double surrounding = 0;
+		int count = 0;
+		
+		double cx = d % SCREEN_W;
+		double cy = d / SCREEN_W;
+
+		for (i=0; i<area; i++)
+		{
+			tx = (i % rr) - r;
+			ty = (i / rr) - r;
+
+			if (tx * tx + ty * ty <= r2) {
+				int t_index = (SCREEN_W * (cy+ty)) + (cx+tx);
+				if ((t_index >= 0) && (t_index < SCREEN_W*SCREEN_H)) {
+					surrounding += depth_buffer[t_index];
+					count++;
+				}
+			}
+		}
+		surrounding /= count;
+		if ((surrounding * thresh) < depth_buffer[d]) {
+			set_pixel(d % SCREEN_W, d / SCREEN_W, 0);
+		}
+	}
 }
 
 void line(int x1, int y1, int x2, int y2, uint8_t c) {
