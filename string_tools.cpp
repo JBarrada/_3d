@@ -73,6 +73,9 @@ int next_numeric(char* data, int i) {
 }
 
 int next_char(char* data, char c, int i) {
+	//while (data[i] == c) {
+		//i++;
+	//}
 	while (data[i] != c) {
 		i++;
 	}
