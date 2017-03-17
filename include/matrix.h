@@ -23,6 +23,7 @@ public:
 	Vector get_vector();
 	
 	void rotate_3d(Vector, double);
+	Matrix rotated_3d(Vector, double);
 	
 	void rotate_3d_x(double);
 	void rotate_3d_y(double);
@@ -48,5 +49,7 @@ public:
 	
 	void print();
 };
+
+extern Matrix IDENTITY;
 
 #endif

@@ -14,6 +14,8 @@ public:
 	Vector operator+=(const Vector&);
 	Vector operator-(const Vector&);
 	Vector operator-=(const Vector&);
+	Vector operator*(double);
+	Vector operator*=(double);
 	Vector operator/(double);
 	Vector operator/=(double);
 	

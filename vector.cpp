@@ -38,6 +38,18 @@ Vector Vector::operator-=(const Vector& b) {
 	return *this;
 }
 
+Vector Vector::operator*(double d) {
+	Vector out(this->x*d, this->y*d, this->z*d);
+	return out;
+}
+Vector Vector::operator*=(double d) {
+	this->x *= d;
+	this->y *= d;
+	this->z *= d;
+	
+	return *this;
+}
+
 Vector Vector::operator/(double d) {
 	Vector out(this->x/d, this->y/d, this->z/d);
 	return out;
