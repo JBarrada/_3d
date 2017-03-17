@@ -4,6 +4,7 @@
 #include "threed.h"
 #include "gfx.h"
 #include "model.h"
+#include "level.h"
 
 #include <stdio.h>
 
@@ -22,10 +23,13 @@ double camera_height = 5.0;
 Vector d_camera_position(15,15,1);
 Vector d_player_up(0, 0, 1);
 
+Vector surface_position(1,1,0);
+
 double smooth_speed = 10.0;
 
 Model player;
-Model test_cube;
+//Model test_cube;
+Surface test_surface((Vector){0,0,0},(Vector){0,0,1}, 8, 10);
 
 void idle() {
 	d_camera_position.x += (camera_position.x - d_camera_position.x) / smooth_speed;
@@ -45,11 +49,24 @@ void idle() {
 }
 
 void keyboard(unsigned char key, int x, int y) {
+	
 	if (key == 'w') {
-		player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
+		//player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
+		Vector step(cos(player_direction)*0.2, sin(player_direction*0.2), 0);
+		int move = test_surface.can_move(surface_position + step);
+		if (move == -2) {
+			surface_position += step;
+			player_position = test_surface.world_pos(surface_position);
+		}
 	}
 	if (key == 's') {
-		player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
+		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
+		Vector step(cos(player_direction)*0.2, sin(player_direction*0.2), 0);
+		int move = test_surface.can_move(surface_position - step);
+		if (move == -2) {
+			surface_position -= step;
+			player_position = test_surface.world_pos(surface_position);
+		}
 	}	
 	
 	if (key == 'a') {
@@ -80,7 +97,7 @@ void draw() {
 	threed.clear_depth_buffer();
 	
 	threed.draw_model_3d(player, get_byte_color(255, 0, 0));
-	threed.draw_model_3d(test_cube, get_byte_color(255, 255, 255));
+	threed.draw_model_3d(test_surface.m, get_byte_color(255, 255, 255));
 	
 	shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
@@ -103,15 +120,9 @@ void load_model(char* file, Model* model) {
 int main() {
 	//load_model("sphere.obj", &player);
 	//load_model("cube.obj", &test_cube);
-	
-	//test_model.transform = test_model.transform.rotated_3d_z(1.5);
-	//test_model.transform = test_model.transform.translated(10, 0, 0);
-	
-	//test_cube = create_face((Vector){0,1,0},(Vector){1,1,0},(Vector){1,0,0},(Vector){0,0,0});
-	//test_model = create_face((Vector){0,1,1},(Vector){1,1,1},(Vector){1,1,0},(Vector){0,1,0});
-	
-	test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});
-	player = create_box((Vector){0,0,0}, 1, 1, 1);
+
+	//test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});
+	player = create_box((Vector){0,0,0.25}, 0.5, 0.5, 0.5);
 	//test_cube.print();
 	
 	Matrix p_matrix = projection_persp_gl(90.0, 100.0, 0.1, 320.0/200.0);
