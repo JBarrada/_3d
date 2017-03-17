@@ -70,6 +70,16 @@ Vector Vector::cross(const Vector& b) {
 	return (Vector){this->y*b.z - b.y*this->z, this->z*b.x - b.z*this->x, this->x*b.y - b.x*this->y};
 }
 
+Vector Vector::project(Vector& b) {
+	Vector a = *this;
+	return b * (b.dot(a)) / (b.dot(b));
+}
+
+Vector Vector::reject(Vector& b) {
+	Vector a = *this;
+	return a - a.project(b);
+}
+
 double Vector::length() {
 	return sqrt((this->x*this->x)+(this->y*this->y)+(this->z*this->z));
 }

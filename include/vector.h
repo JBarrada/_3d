@@ -21,6 +21,8 @@ public:
 	
 	double dot(const Vector&);
 	Vector cross(const Vector&);
+	Vector project(Vector&);
+	Vector reject(Vector&);
 	double length();
 	
 	Vector norm();

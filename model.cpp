@@ -144,6 +144,30 @@ Model create_face(Vector a, Vector b, Vector c, Vector d) {
 	return m;
 }
 
+Model create_face(Vector pos, double width, double height, Vector up) {
+	Vector a = (Vector){0,0,0};
+	Vector b = (Vector){0, height, 0};
+	Vector c = (Vector){width, height, 0};
+	Vector d = (Vector){width, 0, 0};
+	
+	if (!(up.x == 0 && up.y == 0 && up.z == 1)) {
+		Vector axis = up.cross((Vector){0,0,1});
+		double cos_angle = up.dot((Vector){0,0,1});
+		Matrix transform = IDENTITY.rotated_3d(axis, cos_angle+1, cos_angle);
+		a = (transform * Matrix(a)).get_vector();
+		b = (transform * Matrix(b)).get_vector();
+		c = (transform * Matrix(c)).get_vector();
+		d = (transform * Matrix(d)).get_vector();
+	}
+	
+	a += pos;
+	b += pos;
+	c += pos;
+	d += pos;
+	
+	return create_face(a, b, c, d);
+}
+
 Model create_box(Vector c, double lx, double ly, double lz) {
 	Model m;
 	m.points_count = 8;

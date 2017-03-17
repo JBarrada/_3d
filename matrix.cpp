@@ -68,6 +68,7 @@ Vector Matrix::get_vector() {
 }
 
 void Matrix::rotate_3d(Vector v, double angle) {
+	/*
 	double s = sin(angle);
 	double c = cos(angle);
 	double c1 = (1 - c);
@@ -82,10 +83,47 @@ void Matrix::rotate_3d(Vector v, double angle) {
 	Matrix m(4, 4, m_x);
 	
 	*this *= m;
+	*/
+	rotate_3d(v, sin(angle), cos(angle));
 }
+
+void Matrix::rotate_3d(Vector v, double s, double c) {
+	double c1 = (1 - c);
+	
+	v = v.norm();
+	Vector v2(v.x*v.x, v.y*v.y, v.z*v.z);
+	
+	double m_x[] = {c+v2.x*c1,			v.x*v.y*c1-v.z*s, 	v.x*v.z*(1-c)+v.y*s, 	0,
+					v.y*v.x*c1+v.z*s, 	c+v2.y*c1, 			v.y*v.z*(1-c)-v.x*s, 	0,
+					v.z*v.x*c1-v.y*s, 	v.z*v.y*c1+v.x*s, 	c+v2.z*(1-c),			0,
+					0,					0,					0,						1};
+	Matrix m(4, 4, m_x);
+	
+	*this *= m;
+}
+
 Matrix Matrix::rotated_3d(Vector v, double angle) {
+	/*
 	double s = sin(angle);
 	double c = cos(angle);
+	double c1 = (1 - c);
+	
+	v = v.norm();
+	Vector v2(v.x*v.x, v.y*v.y, v.z*v.z);
+	
+	double m_x[] = {c+v2.x*c1,			v.x*v.y*c1-v.z*s, 	v.x*v.z*(1-c)+v.y*s, 	0,
+					v.y*v.x*c1+v.z*s, 	c+v2.y*c1, 			v.y*v.z*(1-c)-v.x*s, 	0,
+					v.z*v.x*c1-v.y*s, 	v.z*v.y*c1+v.x*s, 	c+v2.z*(1-c),			0,
+					0,					0,					0,						1};
+	Matrix m(4, 4, m_x);
+	
+	return *this * m;
+	*/
+	
+	return rotated_3d(v, sin(angle), cos(angle));
+}
+
+Matrix Matrix::rotated_3d(Vector v, double s, double c) {
 	double c1 = (1 - c);
 	
 	v = v.norm();

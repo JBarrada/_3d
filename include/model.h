@@ -35,6 +35,7 @@ public:
 };
 
 Model create_face(Vector a, Vector b, Vector c, Vector d);
+Model create_face(Vector pos, double width, double height, Vector up);
 Model create_box(Vector c, double lx, double ly, double lz);
 
 #endif

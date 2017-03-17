@@ -17,7 +17,7 @@ Vector player_up(0, 0, 1);
 double player_direction = 0;
 Vector camera_position(15,15,1);
 double camera_follow = 15.0;
-double camera_height = 3.0;
+double camera_height = 5.0;
 
 Vector d_camera_position(15,15,1);
 Vector d_player_up(0, 0, 1);
@@ -110,7 +110,7 @@ int main() {
 	//test_cube = create_face((Vector){0,1,0},(Vector){1,1,0},(Vector){1,0,0},(Vector){0,0,0});
 	//test_model = create_face((Vector){0,1,1},(Vector){1,1,1},(Vector){1,1,0},(Vector){0,1,0});
 	
-	test_cube = create_box((Vector){0,0,0}, 1, 2, 3);
+	test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});
 	player = create_box((Vector){0,0,0}, 1, 1, 1);
 	//test_cube.print();
 	
