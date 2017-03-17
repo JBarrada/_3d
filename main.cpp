@@ -45,14 +45,12 @@ void idle() {
 }
 
 void keyboard(unsigned char key, int x, int y) {
-	Vector move = IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2;
-	
 	if (key == 'w') {
-		player_position += move;
+		player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 	}
 	if (key == 's') {
-		player_position -= move;
-	}
+		player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
+	}	
 	
 	if (key == 'a') {
 		player_direction -= 0.1;
@@ -60,7 +58,6 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'd') {
 		player_direction += 0.1;
 	}
-	
 
 	player.transform = IDENTITY.translated(player_position).rotated_3d(player_up * -1, player_direction);
 	
@@ -68,7 +65,6 @@ void keyboard(unsigned char key, int x, int y) {
 	camera_position += IDENTITY.rotated_3d(player_up, player_direction).get_vector() * -camera_follow;
 	camera_position += (player_up * camera_height);
 
-	
 	//render();
 }
 
