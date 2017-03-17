@@ -38,7 +38,7 @@ void idle() {
 	d_player_up.z += (player_up.z - d_player_up.z) / smooth_speed;
 	
 	
-	Matrix v_matrix = look_at_camera(d_camera_position, player_position, player_up);
+	Matrix v_matrix = look_at_camera(d_camera_position, player_position, d_player_up);
 	threed.update_v_matrix(v_matrix);
 	
 	render();
@@ -58,6 +58,14 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'd') {
 		player_direction += 0.1;
 	}
+	
+	if (key == 'q') {
+		player_up = (Vector){0,0,1};
+	}
+	if (key == 'e') {
+		player_up = (Vector){0,1,0};
+	}
+	
 
 	player.transform = IDENTITY.translated(player_position).rotated_3d(player_up * -1, player_direction);
 	
