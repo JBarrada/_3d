@@ -65,6 +65,8 @@ uint8_t get_byte_color(uint32_t color) {
 
 
 uint8_t interpolate_color(uint8_t c, double value) {
+	value = constrain(value, 0.0, 1.0);
+	
 	uint8_t r = (c >> 5) & 7;
 	uint8_t g = (c >> 2) & 7;
 	uint8_t b = (c >> 0) & 3;

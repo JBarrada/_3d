@@ -17,6 +17,7 @@ double sqrt(const double x);
 int round(double d);
 double interpolate(double start, double end, double pos);
 
+double constrain(double value, double min, double max);
 double dmax(double, double);
 double dmin(double, double);
 

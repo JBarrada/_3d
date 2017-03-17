@@ -16,7 +16,7 @@ Vector player_position(0, 0, 0);
 Vector player_up(0, 0, 1);
 double player_direction = 0;
 Vector camera_position(15,15,1);
-double camera_follow = 10.0;
+double camera_follow = 15.0;
 double camera_height = 3.0;
 
 Vector d_camera_position(15,15,1);

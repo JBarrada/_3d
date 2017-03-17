@@ -56,6 +56,10 @@ double interpolate(double start, double end, double pos) {
 	return ((end-start)*pos) + start;
 }
 
+double constrain(double value, double min, double max) {
+	return dmin(dmax(value, min), max);
+}
+
 double dmax(double a, double b) {
 	if (a>b)
 		return a;
