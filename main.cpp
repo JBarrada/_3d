@@ -28,8 +28,17 @@ Vector surface_position(1,1,0);
 double smooth_speed = 10.0;
 
 Model player;
-//Model test_cube;
-Surface test_surface((Vector){0,0,0},(Vector){0,0,1}, 8, 10);
+
+Model x_cube;
+Model y_cube;
+Model z_cube;
+
+Surface test_surface1((Vector){0,0,0},(Vector){0,0,1}, 8, 8, -1, 1, -1, -1);
+Surface test_surface2((Vector){0,0,-8},(Vector){0,-1,0}, 8, 8, 0, -1, -1, -1);
+
+Level test_level;
+
+
 
 void idle() {
 	d_camera_position.x += (camera_position.x - d_camera_position.x) / smooth_speed;
@@ -53,22 +62,36 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'w') {
 		//player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
+		
+		test_level.move(step);
+		player_position = test_level.world_position;
+		player_up = test_level.surfaces[test_level.current_surface].up;
+		
+		/*
 		int move = test_surface.can_move(surface_position + step);
 		if (move == -2) {
 			surface_position += step;
 			player_position = test_surface.world_pos(surface_position);
 			//player_position = (Vector)surface_position;
 		}
+		*/
 	}
 	if (key == 's') {
 		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
+		
+		test_level.move(step * -1);
+		player_position = test_level.world_position;
+		player_up = test_level.surfaces[test_level.current_surface].up;
+		
+		/*
 		int move = test_surface.can_move(surface_position - step);
 		if (move == -2) {
 			surface_position -= step;
 			player_position = test_surface.world_pos(surface_position);
 			//player_position = (Vector)surface_position;
 		}
+		*/
 	}	
 	
 	if (key == 'a') {
@@ -79,10 +102,10 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	
 	if (key == 'q') {
-		player_up = (Vector){0,0,1};
+		//player_up = (Vector){0,0,1};
 	}
 	if (key == 'e') {
-		player_up = (Vector){0,1,0};
+		//player_up = (Vector){0,1,0};
 	}
 	
 
@@ -99,7 +122,15 @@ void draw() {
 	threed.clear_depth_buffer();
 	
 	threed.draw_model_3d(player, get_byte_color(255, 0, 0));
-	threed.draw_model_3d(test_surface.m, get_byte_color(255, 255, 255));
+	
+	for (int i=0; i < test_level.surfaces_count; i++) {
+		threed.draw_model_3d(test_level.surfaces[i].m, get_byte_color(255, 255, 255));
+	}
+	
+	
+	threed.draw_model_3d(x_cube, get_byte_color(0, 0, 255));
+	threed.draw_model_3d(y_cube, get_byte_color(0, 255, 0));
+	threed.draw_model_3d(z_cube, get_byte_color(255, 0, 0));
 	
 	//shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
@@ -124,8 +155,18 @@ int main() {
 	//load_model("cube.obj", &test_cube);
 
 	//test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});
-	player = create_box((Vector){0,0,0.25}, 0.5, 0.5, 0.5);
+	player = create_box((Vector){0,0,0}, 0.5, 0.5, 0.5);
 	//test_cube.print();
+	
+	x_cube = create_box((Vector){1,0,0}, 0.2, 0.2, 0.2);
+	y_cube = create_box((Vector){0,1,0}, 0.2, 0.2, 0.2);
+	z_cube = create_box((Vector){0,0,1}, 0.2, 0.2, 0.2);
+	
+	test_level.surfaces_count = 2;
+	test_level.surfaces = new Surface[2];
+	test_level.surfaces[0] = test_surface1;
+	test_level.surfaces[1] = test_surface2;
+	
 	
 	Matrix p_matrix = projection_persp_gl(90.0, 100.0, 0.1, 320.0/200.0);
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});

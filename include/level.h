@@ -32,4 +32,17 @@ public:
 	Vector world_pos(const Vector&);
 };
 
+class Level {
+public:
+	Surface *surfaces;
+	int surfaces_count;
+	
+	int current_surface;
+	Vector surface_position;
+	Vector world_position;
+	
+	Level();	
+	bool move(Vector);
+};
+
 #endif
