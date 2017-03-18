@@ -17,8 +17,8 @@ Vector player_position(0, 0, 0);
 Vector player_up(0, 0, 1);
 double player_direction = 0;
 Vector camera_position(15,15,1);
-double camera_follow = 15.0;
-double camera_height = 5.0;
+double camera_follow = 8.0;
+double camera_height = 2.0;
 
 Vector d_camera_position(15,15,1);
 Vector d_player_up(0, 0, 1);
@@ -66,15 +66,6 @@ void keyboard(unsigned char key, int x, int y) {
 		test_level.move(step);
 		player_position = test_level.world_position;
 		player_up = test_level.surfaces[test_level.current_surface].up;
-		
-		/*
-		int move = test_surface.can_move(surface_position + step);
-		if (move == -2) {
-			surface_position += step;
-			player_position = test_surface.world_pos(surface_position);
-			//player_position = (Vector)surface_position;
-		}
-		*/
 	}
 	if (key == 's') {
 		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
@@ -83,15 +74,6 @@ void keyboard(unsigned char key, int x, int y) {
 		test_level.move(step * -1);
 		player_position = test_level.world_position;
 		player_up = test_level.surfaces[test_level.current_surface].up;
-		
-		/*
-		int move = test_surface.can_move(surface_position - step);
-		if (move == -2) {
-			surface_position -= step;
-			player_position = test_surface.world_pos(surface_position);
-			//player_position = (Vector)surface_position;
-		}
-		*/
 	}	
 	
 	if (key == 'a') {
