@@ -99,6 +99,8 @@ void shade(double* depth_buffer) {
 		if (depth_buffer[d] < minz && depth_buffer[d] != 0.0) minz = depth_buffer[d];
 	}
 	
+	maxz -= ((maxz-minz)*0.25);
+	
 	current_minz += (minz - current_minz) / 2.0;
 	current_maxz += (maxz - current_maxz) / 2.0;
 	

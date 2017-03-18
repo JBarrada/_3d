@@ -39,8 +39,12 @@ Vector ThreeD::get_projected(Vector a) {
 		p_v /= m_v.x[3];
 	}
 	
-	p_v.x = dmin(SCREEN_W - 1, (p_v.x + 1) * 0.5 * SCREEN_W);
-	p_v.y = dmin(SCREEN_H - 1,  (1 - (p_v.y + 1) * 0.5) * SCREEN_H);
+	//p_v.x = dmin(SCREEN_W - 1, (p_v.x + 1) * 0.5 * SCREEN_W);
+	//p_v.y = dmin(SCREEN_H - 1,  (1 - (p_v.y + 1) * 0.5) * SCREEN_H);
+	
+	p_v.x = (p_v.x + 1) * 0.5 * SCREEN_W;
+	p_v.y = (1 - (p_v.y + 1) * 0.5) * SCREEN_H;
+	
 	
 	return p_v;
 }
@@ -168,12 +172,12 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 	
 	
 	for (int i=0; i < m.triangles_count; i++) {
-		if (on_screen(points_p[m.triangles[i].a]) || on_screen( points_p[m.triangles[i].b]) || on_screen(points_p[m.triangles[i].c])) {
+		//if (on_screen(points_p[m.triangles[i].a]) || on_screen( points_p[m.triangles[i].b]) || on_screen(points_p[m.triangles[i].c])) {
 			if (camera_angles[m.triangles[i].normal] <= 0.6) {
 				//draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
 				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], interpolate_color(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)*2.0)));
 			}
-		}
+		//}
 	}
 }
 

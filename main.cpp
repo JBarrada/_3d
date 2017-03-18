@@ -52,28 +52,30 @@ void keyboard(unsigned char key, int x, int y) {
 	
 	if (key == 'w') {
 		//player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
-		Vector step(cos(player_direction)*0.2, sin(player_direction*0.2), 0);
+		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
 		int move = test_surface.can_move(surface_position + step);
 		if (move == -2) {
 			surface_position += step;
 			player_position = test_surface.world_pos(surface_position);
+			//player_position = (Vector)surface_position;
 		}
 	}
 	if (key == 's') {
 		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
-		Vector step(cos(player_direction)*0.2, sin(player_direction*0.2), 0);
+		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
 		int move = test_surface.can_move(surface_position - step);
 		if (move == -2) {
 			surface_position -= step;
 			player_position = test_surface.world_pos(surface_position);
+			//player_position = (Vector)surface_position;
 		}
 	}	
 	
 	if (key == 'a') {
-		player_direction -= 0.1;
+		player_direction += 0.1;
 	}
 	if (key == 'd') {
-		player_direction += 0.1;
+		player_direction -= 0.1;
 	}
 	
 	if (key == 'q') {
@@ -84,10 +86,10 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	
 
-	player.transform = IDENTITY.translated(player_position).rotated_3d(player_up * -1, player_direction);
+	player.transform = IDENTITY.translated(player_position).rotated_3d(player_up, player_direction);
 	
 	camera_position = (Vector)player_position;
-	camera_position += IDENTITY.rotated_3d(player_up, player_direction).get_vector() * -camera_follow;
+	camera_position += IDENTITY.rotated_3d(player_up * -1, player_direction).get_vector() * -camera_follow;
 	camera_position += (player_up * camera_height);
 
 	//render();
@@ -99,7 +101,7 @@ void draw() {
 	threed.draw_model_3d(player, get_byte_color(255, 0, 0));
 	threed.draw_model_3d(test_surface.m, get_byte_color(255, 255, 255));
 	
-	shade(threed.depth_buffer);
+	//shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
 }
 
