@@ -12,6 +12,7 @@ double tan(double x);
 double atan(double x);
 
 double dabs(double x);
+int iabs(int x);
 double pow(double x, double e);
 double sqrt(const double x);
 int round(double d);

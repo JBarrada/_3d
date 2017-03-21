@@ -27,6 +27,9 @@ void set_pixel(int, int, uint8_t);
 void shade(double*); 
 void toon(double*);
 
+void toon_set_pixel(int x, int y, uint8_t c);
+void toon_mask_line(int x0, int y0, int x1, int y1, float wd);
+
 void line(int, int, int, int, uint8_t);
 void circle(int, int, int, uint8_t);
 void circle_filled(int, int, int, uint8_t);

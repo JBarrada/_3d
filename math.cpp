@@ -27,6 +27,13 @@ double dabs(double x) {
 		return x;
 }
 
+int iabs(int x) {
+	if (x < 0)
+		return -1*x;
+	else 
+		return x;
+}
+
 double pow(double x, double e) {
 	double value = 1;
 	for (int i=0; i < e; i++) {

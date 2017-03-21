@@ -2,6 +2,7 @@
 
 uint32_t palette[256];
 uint32_t screen_buffer[SCREEN_W*SCREEN_H];
+uint8_t toon_buffer[SCREEN_W*SCREEN_H];
 
 double current_minz = 5.0;
 double current_maxz = 10.0;
@@ -77,6 +78,8 @@ uint8_t interpolate_color(uint8_t c, double value) {
 void render() {
 	memset(screen_buffer, get_byte_color(255,255,255), sizeof(screen_buffer));
 	
+	memset(toon_buffer, 0, sizeof(toon_buffer));
+	
 	draw_function();
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -117,38 +120,73 @@ void shade(double* depth_buffer) {
 	}
 }
 
+void toon_set_pixel(int x, int y, uint8_t c) {
+	if (x<SCREEN_W & y<SCREEN_H & x>=0 & y>=0) {
+		toon_buffer[(y*SCREEN_W+x)] = c;
+	}	
+}
+
+void toon_mask_line(int x0, int y0, int x1, int y1, float wd) {
+	int dx = iabs(x1-x0), sx = x0 < x1 ? 1 : -1; 
+	int dy = iabs(y1-y0), sy = y0 < y1 ? 1 : -1; 
+	int err = dx-dy, e2, x2, y2;                          /* error value e_xy */
+	float ed = dx+dy == 0 ? 1 : sqrt((float)dx*dx+(float)dy*dy);
+
+	for (wd = (wd+1)/2; ; ) {                                   /* pixel loop */
+		toon_set_pixel(x0,y0,1);
+	
+		e2 = err; x2 = x0;
+		if (2*e2 >= -dx) {                                           /* x step */
+			for (e2 += dy, y2 = y0; e2 < ed*wd && (y1 != y2 || dx > dy); e2 += dx)
+				toon_set_pixel(x0, y2 += sy,1);
+			if (x0 == x1) break;
+			e2 = err; err -= dy; x0 += sx; 
+		} 
+		if (2*e2 <= dy) {                                            /* y step */
+			for (e2 = dx-e2; e2 < ed*wd && (x1 != x2 || dx < dy); e2 += dy)
+				toon_set_pixel(x2 += sx, y0,1);
+			if (y0 == y1) break;
+			err += dx; y0 += sy; 
+		}
+	}
+}
+
+
 void toon(double* depth_buffer) {
 	double thresh = 1.0008;
 
-	int r = 1;
+	int r = 2;
 	int i, tx, ty;
 	int r2 = r * r;
 	int area = r2 << 2;
 	int rr = r << 1;
 	
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
-		double surrounding = 0;
-		int count = 0;
-		
-		double cx = d % SCREEN_W;
-		double cy = d / SCREEN_W;
+		if (toon_buffer[d]) {
+			double surrounding = 0;
+			int count = 0;
+			
+			double cx = d % SCREEN_W;
+			double cy = d / SCREEN_W;
 
-		for (i=0; i<area; i++)
-		{
-			tx = (i % rr) - r;
-			ty = (i / rr) - r;
+			for (i=0; i<area; i++)
+			{
+				tx = (i % rr) - r;
+				ty = (i / rr) - r;
 
-			if (tx * tx + ty * ty <= r2) {
-				int t_index = (SCREEN_W * (cy+ty)) + (cx+tx);
-				if ((t_index >= 0) && (t_index < SCREEN_W*SCREEN_H)) {
-					surrounding += depth_buffer[t_index];
-					count++;
+				if (tx * tx + ty * ty <= r2) {
+					int t_index = (SCREEN_W * (cy+ty)) + (cx+tx);
+					if ((t_index >= 0) && (t_index < SCREEN_W*SCREEN_H)) {
+						surrounding += depth_buffer[t_index];
+						count++;
+					}
 				}
 			}
-		}
-		surrounding /= count;
-		if ((surrounding * thresh) < depth_buffer[d]) {
-			set_pixel(d % SCREEN_W, d / SCREEN_W, 0);
+			surrounding /= count;
+			if ((surrounding * thresh) < depth_buffer[d]) {
+				set_pixel(d % SCREEN_W, d / SCREEN_W, 0);
+			}
+			//set_pixel(d % SCREEN_W, d / SCREEN_W, 0);
 		}
 	}
 }

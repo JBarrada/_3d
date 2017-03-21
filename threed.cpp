@@ -118,6 +118,11 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
 		bft(p1, (Vector){xi, p2.y, zi}, p2, c);
 		tft(p2, (Vector){xi, p2.y, zi}, p3, c);
 	}
+	
+	// toon stuff
+	toon_mask_line(p1.x, p1.y, p2.x, p2.y, 5.0);
+	toon_mask_line(p1.x, p1.y, p3.x, p3.y, 5.0);
+	toon_mask_line(p3.x, p3.y, p2.x, p2.y, 5.0);
 }
 
 void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
