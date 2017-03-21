@@ -18,6 +18,10 @@ public:
 	Matrix v_matrix;
 	Matrix pv_matrix;
 	
+	Vector camera_pos;
+	Vector np_n;
+	double np_d;
+	
 	double render_w, render_h;
 	double depth_buffer[SCREEN_W*SCREEN_H];
 	
@@ -50,4 +54,6 @@ Matrix projection_ortho(double, double, double, double);
 Matrix projection_persp(double, double, double, double);
 Matrix projection_persp_gl(double, double, double, double);
 
+Vector ray_plane_intersect(Vector&, Vector&, Vector&, double);
+double point_plane_side(Vector&, Vector&, Vector&);
 #endif

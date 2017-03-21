@@ -75,7 +75,7 @@ uint8_t interpolate_color(uint8_t c, double value) {
 }
 
 void render() {
-	memset(screen_buffer, get_byte_color(60,60,60), sizeof(screen_buffer));
+	memset(screen_buffer, get_byte_color(255,255,255), sizeof(screen_buffer));
 	
 	draw_function();
 	
@@ -99,12 +99,15 @@ void shade(double* depth_buffer) {
 		if (depth_buffer[d] < minz && depth_buffer[d] != 0.0) minz = depth_buffer[d];
 	}
 	
-	maxz -= ((maxz-minz)*0.5);
+	//maxz -= ((maxz-minz)*0.5);
 	
-	current_minz += (minz - current_minz) / 2.0;
-	current_maxz += (maxz - current_maxz) / 2.0;
+	//current_minz += (minz - current_minz) / 2.0;
+	//current_maxz += (maxz - current_maxz) / 2.0;
 	
-	// printf("minz: %f, maxz: %f\n", minz, maxz);
+	current_minz = 4.5;
+	current_maxz = 5.5;
+	
+	printf("minz: %f, maxz: %f\n", minz, maxz);
 	
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
 		if (depth_buffer[d] != 0.0) {
@@ -117,7 +120,7 @@ void shade(double* depth_buffer) {
 void toon(double* depth_buffer) {
 	double thresh = 1.0008;
 
-	int r = 2;
+	int r = 1;
 	int i, tx, ty;
 	int r2 = r * r;
 	int area = r2 << 2;

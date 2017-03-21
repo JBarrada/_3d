@@ -22,6 +22,7 @@ double camera_height = 2.0;
 
 Vector d_camera_position(15,15,1);
 Vector d_player_up(0, 0, 1);
+Vector d_player_position(0, 0, 0);
 
 Vector surface_position(1,1,0);
 
@@ -50,9 +51,22 @@ void idle() {
 	d_player_up.y += (player_up.y - d_player_up.y) / smooth_speed;
 	d_player_up.z += (player_up.z - d_player_up.z) / smooth_speed;
 	
+	d_player_position.x += (player_position.x - d_player_position.x) / smooth_speed;
+	d_player_position.y += (player_position.y - d_player_position.y) / smooth_speed;
+	d_player_position.z += (player_position.z - d_player_position.z) / smooth_speed;
 	
-	Matrix v_matrix = look_at_camera(d_camera_position, player_position, d_player_up);
+	
+	Matrix v_matrix = look_at_camera(d_camera_position, d_player_position, d_player_up);
 	threed.update_v_matrix(v_matrix);
+	
+	// update near plane
+	threed.np_n = (d_player_position - d_camera_position).norm();
+	threed.np_d = threed.np_n.dot(d_camera_position + threed.np_n);
+	
+	threed.camera_pos = (Vector)(d_camera_position + threed.np_n);
+	
+	//threed.np_n.print();
+	//printf("%f\n", threed.np_d);
 	
 	render();
 }
@@ -109,6 +123,11 @@ void draw() {
 		threed.draw_model_3d(test_level.surfaces[i].m, get_byte_color(255, 255, 255));
 	}
 	
+	/*
+	printf("START-SURFACE\n");
+	threed.draw_model_3d(test_level.surfaces[0].m, get_byte_color(255, 255, 255));
+	printf("END-SURFACE\n");
+	*/
 	
 	threed.draw_model_3d(x_cube, get_byte_color(0, 0, 255));
 	threed.draw_model_3d(y_cube, get_byte_color(0, 255, 0));
@@ -133,7 +152,7 @@ void load_model(char* file, Model* model) {
 }
 
 int main() {
-	//load_model("sphere.obj", &player);
+	//load_model("test.obj", &player);
 	//load_model("cube.obj", &test_cube);
 
 	//test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});

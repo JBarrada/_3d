@@ -45,6 +45,7 @@ Vector ThreeD::get_projected(Vector a) {
 	p_v.x = (p_v.x + 1) * 0.5 * SCREEN_W;
 	p_v.y = (1 - (p_v.y + 1) * 0.5) * SCREEN_H;
 	
+	//p_v.print();
 	
 	return p_v;
 }
@@ -143,14 +144,31 @@ void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c) {
 }
 
 
+Vector ray_plane_intersect(Vector& a, Vector& b, Vector& n, double d) {
+	Vector ba = (b - a).norm();
+	double n_a = n.dot(a);
+	double n_ba = n.dot(ba);
+	return a + (ba * ((d - n_a)/n_ba));
+}
+
+
+double point_plane_side(Vector&a, Vector& b, Vector& n) {
+	Vector ba = b - a;
+	return ba.dot(n);
+}
+
 
 void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
+	Vector points_t[m.points_count];
 	Vector points_p[m.points_count];
+	
 	Matrix transform_copy = m.transform;
 	for (int i=0; i < m.points_count; i++) {
 		Matrix point(m.points[i]);
 		Matrix translated_point = (transform_copy * point);
-		points_p[i] = get_projected(translated_point.get_vector());
+		points_t[i] = translated_point.get_vector();
+		points_p[i] = get_projected(points_t[i]);
+		//points_p[i].print();
 	}
 
 	
@@ -170,14 +188,60 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 		//printf("%f\n", camera_angles[i]);
 	}
 	
-	
+	// frustum clipping
 	for (int i=0; i < m.triangles_count; i++) {
-		//if (on_screen(points_p[m.triangles[i].a]) || on_screen( points_p[m.triangles[i].b]) || on_screen(points_p[m.triangles[i].c])) {
-			//if (camera_angles[m.triangles[i].normal] <= 0.6) {
-				//draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], c);
-				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], interpolate_color(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)*2.0)));
-			//}
-		//}
+		if (camera_angles[m.triangles[i].normal] <= 0.6) {
+			int projected[] = {m.triangles[i].a, m.triangles[i].b, m.triangles[i].c};
+
+			int num_behind = 0;
+			int behind = -1;
+			int front = -1;
+			
+			for (int p = 0; p < 3; p++) {
+				if (point_plane_side(points_t[projected[p]], this->camera_pos, this->np_n) > 0.0) {
+					num_behind++;
+					behind = p;
+				} else {
+					front = p;
+				}
+			}
+			
+			uint8_t i_color = interpolate_color(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/2.0));
+
+			if (num_behind == 0) {
+				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], i_color);
+				//printf("NO BEHIND\n");
+			}
+			if (num_behind == 1) {
+				Vector& a = points_t[projected[(behind+1)%3]];
+				Vector& b = points_t[projected[(behind+2)%3]];
+				Vector& c = points_t[projected[behind]];
+				
+				Vector c1 = ray_plane_intersect(a, c, this->np_n, this->np_d);
+				Vector c2 = ray_plane_intersect(b, c, this->np_n, this->np_d);
+				
+				Vector c1_p = get_projected(c1);
+				Vector c2_p = get_projected(c2);
+
+				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c1_p, i_color);
+				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c2_p, i_color);
+				//printf("BEHIND_1\n");
+			}
+			if (num_behind == 2) {
+				Vector& a = points_t[projected[front]];
+				Vector& b = points_t[projected[(front+1)%3]];
+				Vector& c = points_t[projected[(front+2)%3]];
+				
+				Vector b2 = ray_plane_intersect(a, b, this->np_n, this->np_d);
+				Vector c2 = ray_plane_intersect(a, c, this->np_n, this->np_d);
+				
+				Vector b2_p = get_projected(b2);
+				Vector c2_p = get_projected(c2);
+				
+				draw_triangle(points_p[projected[front]], b2_p, c2_p, i_color);
+				//printf("BEHIND_2\n");
+			}		
+		}
 	}
 }
 
