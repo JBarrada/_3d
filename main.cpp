@@ -34,6 +34,8 @@ Model x_cube;
 Model y_cube;
 Model z_cube;
 
+Model monkey;
+
 Surface test_surface1((Vector){0,0,0},(Vector){0,0,1}, 8, 8, -1, 1, -1, -1);
 Surface test_surface2((Vector){0,0,-8},(Vector){0,-1,0}, 8, 8, 0, -1, -1, -1);
 
@@ -129,6 +131,8 @@ void draw() {
 	printf("END-SURFACE\n");
 	*/
 	
+	threed.draw_model_3d(monkey, get_32bit_color(255, 0, 255));
+	
 	threed.draw_model_3d(x_cube, get_32bit_color(0, 0, 255));
 	threed.draw_model_3d(y_cube, get_32bit_color(0, 255, 0));
 	threed.draw_model_3d(z_cube, get_32bit_color(255, 0, 0));
@@ -153,7 +157,11 @@ void load_model(char* file, Model* model) {
 }
 
 int main() {
-	//load_model("test.obj", &player);
+	load_model("test.obj", &monkey);
+	
+	monkey.transform = IDENTITY.translated(2,2,0.5);
+	monkey.transform = monkey.transform.scaled(0.2, 0.2, 0.2);
+	
 	//load_model("cube.obj", &test_cube);
 
 	//test_cube = create_face((Vector){0,0,0}, 4, 5, (Vector){0,0,1});
