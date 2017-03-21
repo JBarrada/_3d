@@ -38,15 +38,10 @@ Vector ThreeD::get_projected(Vector a) {
 	if (m_v.x[3] != 1) {
 		p_v /= m_v.x[3];
 	}
-	
-	//p_v.x = dmin(SCREEN_W - 1, (p_v.x + 1) * 0.5 * SCREEN_W);
-	//p_v.y = dmin(SCREEN_H - 1,  (1 - (p_v.y + 1) * 0.5) * SCREEN_H);
-	
+
 	p_v.x = (p_v.x + 1) * 0.5 * SCREEN_W;
 	p_v.y = (1 - (p_v.y + 1) * 0.5) * SCREEN_H;
-	
-	//p_v.print();
-	
+
 	return p_v;
 }
 
@@ -124,7 +119,6 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint32_t c) {
 	toon_mask_line(p1.x, p1.y, p3.x, p3.y, 5.0);
 	toon_mask_line(p3.x, p3.y, p2.x, p2.y, 5.0);
 }
-
 void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 	for (int y=dmax(pc.y,0); y<=dmin(pa.y, SCREEN_H); y++) {
 		double gradient = (y-pc.y)/(double)(pa.y-pc.y);
@@ -135,7 +129,6 @@ void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 		draw_line((Vector){x1, y, z1}, (Vector){x2, y, z2}, c);
 	}
 }
-
 void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 	pb.y = round(pb.y);
 	for (int y=dmin(pa.y, SCREEN_H); y>=dmax(pb.y, 0); y--) {
@@ -148,7 +141,6 @@ void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 	}
 }
 
-
 Vector ray_plane_intersect(Vector& a, Vector& b, Vector& n, double d) {
 	Vector ba = (b - a).norm();
 	double n_a = n.dot(a);
@@ -160,8 +152,7 @@ double point_plane_side(Vector&a, Vector& b, Vector& n) {
 	return ba.dot(n);
 }
 
-
-void ThreeD::draw_model_3d(const Model& m, uint32_t c) {
+void ThreeD::draw_model_3d(const Model& m) {
 	Vector points_t[m.points_count];
 	Vector points_p[m.points_count];
 	
@@ -171,24 +162,19 @@ void ThreeD::draw_model_3d(const Model& m, uint32_t c) {
 		Matrix translated_point = (transform_copy * point);
 		points_t[i] = translated_point.get_vector();
 		points_p[i] = get_projected(points_t[i]);
-		//points_p[i].print();
 	}
 
-	
-	// todo get angle to camera so we can skip certain triangles
 	double camera_angles[m.normals_count];
 	for (int i=0; i < m.normals_count; i++) {
 		Matrix normal(m.normals[i]);
 		Vector transformed_normal = normal.get_vector();
 		
 		Matrix inv((Vector){0,0,-1});
-		//Vector camera = (v_matrix * inv).get_vector();
 		Vector camera_r = (v_matrix * inv).get_vector();
 		Matrix camera_m(camera_r);
 		Vector camera = (camera_m * transform_copy).get_vector();
 		
 		camera_angles[i] = ((camera.dot(transformed_normal) / (camera.length() * transformed_normal.length()))+1.0)/2.0;
-		//printf("%f\n", camera_angles[i]);
 	}
 	
 	// frustum clipping
@@ -209,40 +195,30 @@ void ThreeD::draw_model_3d(const Model& m, uint32_t c) {
 				}
 			}
 			
-			uint32_t i_color = interpolate_color_32bit(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/2.0));
+			uint32_t color = m.materials[m.triangles[i].mtl].color;
+			uint32_t i_color = interpolate_color_32bit(color, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/1.5));
 
 			if (num_behind == 0) {
 				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], i_color);
-				//printf("NO BEHIND\n");
 			}
 			if (num_behind == 1) {
-				Vector& a = points_t[projected[(behind+1)%3]];
-				Vector& b = points_t[projected[(behind+2)%3]];
-				Vector& c = points_t[projected[behind]];
-				
-				Vector c1 = ray_plane_intersect(a, c, this->np_n, this->np_d);
-				Vector c2 = ray_plane_intersect(b, c, this->np_n, this->np_d);
+				Vector c1 = ray_plane_intersect(points_t[projected[(behind+1)%3]], points_t[projected[behind]], this->np_n, this->np_d);
+				Vector c2 = ray_plane_intersect(points_t[projected[(behind+2)%3]], points_t[projected[behind]], this->np_n, this->np_d);
 				
 				Vector c1_p = get_projected(c1);
 				Vector c2_p = get_projected(c2);
 
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c1_p, i_color);
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c2_p, i_color);
-				//printf("BEHIND_1\n");
 			}
 			if (num_behind == 2) {
-				Vector& a = points_t[projected[front]];
-				Vector& b = points_t[projected[(front+1)%3]];
-				Vector& c = points_t[projected[(front+2)%3]];
-				
-				Vector b2 = ray_plane_intersect(a, b, this->np_n, this->np_d);
-				Vector c2 = ray_plane_intersect(a, c, this->np_n, this->np_d);
+				Vector b2 = ray_plane_intersect(points_t[projected[front]], points_t[projected[(front+1)%3]], this->np_n, this->np_d);
+				Vector c2 = ray_plane_intersect(points_t[projected[front]], points_t[projected[(front+2)%3]], this->np_n, this->np_d);
 				
 				Vector b2_p = get_projected(b2);
 				Vector c2_p = get_projected(c2);
 				
 				draw_triangle(points_p[projected[front]], b2_p, c2_p, i_color);
-				//printf("BEHIND_2\n");
 			}		
 		}
 	}

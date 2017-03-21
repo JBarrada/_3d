@@ -42,11 +42,29 @@ bool is_numeric(char c) {
 	return false;
 }
 
+bool starts_with(char* data, char* match) {
+	for (int i=0; i < sizeof(match); i++) {
+		if (data[i] != match[i])
+			return false;
+	}
+	return true;
+}
+
 int next_line(char* data, int i) {
 	while (!is_newline(data[i])) {
 		i++;
 	}
 	while (is_newline(data[i])) {
+		i++;
+	}
+	return i;
+}
+
+int next_whitespace(char* data, int i) {
+	while (is_whitespace(data[i])) {
+		i++;
+	}
+	while (!is_whitespace(data[i])) {
 		i++;
 	}
 	return i;

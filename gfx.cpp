@@ -13,9 +13,6 @@ uint8_t bayer8x8[] = {	 0,48,12,60, 3,51,15,63,
 						10,58, 6,54, 9,57, 5,53,
 						42,26,38,22,41,25,37,21};
 
-double current_minz = 5.0;
-double current_maxz = 10.0;
-
 void (*draw_function)();
 
 void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y)) {
@@ -65,27 +62,14 @@ void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key
 uint8_t get_byte_color(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r/32) << 5) | ((g/32) << 2) | (b/64);
 }
-
-uint32_t get_32bit_color(uint8_t r, uint8_t g, uint8_t b) {
-	return (r << 16) | (g << 8) | (b << 0);
-}
-
 uint8_t get_byte_color(uint32_t color) {
 	uint8_t r = (color >> 16) & 255;
 	uint8_t g = (color >> 8) & 255;
 	uint8_t b = (color >> 0) & 255;
 	return ((r/32) << 5) | ((g/32) << 2) | (b/64);
 }
-
-
-uint32_t interpolate_color_32bit(uint32_t c, double value) {
-	value = constrain(value, 0.0, 1.0);
-	
-	uint8_t r = (c >> 16) & 255;
-	uint8_t g = (c >> 8) & 255;
-	uint8_t b = (c >> 0) & 255;
-	
-	return ((uint32_t)(value*(double)r) << 16) | ((uint32_t)(value*(double)g) << 8) | (uint32_t)(value*(double)b);
+uint32_t get_32bit_color(uint8_t r, uint8_t g, uint8_t b) {
+	return (r << 16) | (g << 8) | (b << 0);
 }
 
 uint8_t interpolate_color(uint8_t c, double value) {
@@ -97,11 +81,20 @@ uint8_t interpolate_color(uint8_t c, double value) {
 	
 	return ((uint8_t)(value*(double)r) << 5) | ((uint8_t)(value*(double)g) << 2) | (uint8_t)(value*(double)b);
 }
+uint32_t interpolate_color_32bit(uint32_t c, double value) {
+	value = constrain(value, 0.0, 1.0);
+	
+	uint8_t r = (c >> 16) & 255;
+	uint8_t g = (c >> 8) & 255;
+	uint8_t b = (c >> 0) & 255;
+	
+	return ((uint32_t)(value*(double)r) << 16) | ((uint32_t)(value*(double)g) << 8) | (uint32_t)(value*(double)b);
+}
 
 void render() {
-	memset(screen_buffer, get_byte_color(255,255,255), sizeof(screen_buffer));
+	memset(screen_buffer, 0xff, sizeof(screen_buffer));
 	
-	memset(toon_buffer, 0, sizeof(toon_buffer));
+	memset(toon_buffer, 0x00, sizeof(toon_buffer));
 	
 	draw_function();
 	
@@ -115,7 +108,6 @@ void set_pixel(int x, int y, uint8_t c) {
 		screen_buffer[(y*SCREEN_W+x)] = palette[c];
 	}	
 }
-
 void set_pixel_32bit(int x, int y, uint32_t c) {
 	if (x<SCREEN_W & y<SCREEN_H & x>=0 & y>=0) {
 		screen_buffer[(y*SCREEN_W+x)] = c;
@@ -138,11 +130,11 @@ void dither() {
         b = constrain(b + bayer8x8[bayer_index], 0, 255);
 		
 		screen_buffer[d] = palette[get_byte_color(r, g, b)];
-        //image.SetPixel(x, y, GetClosestColor(color, bitdepth);  
 	}
 }
 
 void shade(double* depth_buffer) {
+	/*
 	double minz = 100.0;
 	double maxz = 0.0;
 	
@@ -150,20 +142,16 @@ void shade(double* depth_buffer) {
 		if (depth_buffer[d] > maxz) maxz = depth_buffer[d];
 		if (depth_buffer[d] < minz && depth_buffer[d] != 0.0) minz = depth_buffer[d];
 	}
-	
-	//maxz -= ((maxz-minz)*0.5);
-	
-	//current_minz += (minz - current_minz) / 2.0;
-	//current_maxz += (maxz - current_maxz) / 2.0;
-	
-	current_minz = 4.5;
-	current_maxz = 5.5;
+	*/
+
+	double minz = 4.5;
+	double maxz = 5.5;
 	
 	//printf("minz: %f, maxz: %f\n", minz, maxz);
 	
 	for (int d=0; d<SCREEN_W*SCREEN_H; d++) {
 		if (depth_buffer[d] != 0.0) {
-			uint32_t c = interpolate_color_32bit(screen_buffer[d], ((depth_buffer[d] - current_minz) / (current_maxz - current_minz)));
+			uint32_t c = interpolate_color_32bit(screen_buffer[d], ((depth_buffer[d] - minz) / (maxz - minz)));
 			screen_buffer[d] = c;
 		}
 	}
@@ -174,7 +162,6 @@ void toon_set_pixel(int x, int y, uint8_t c) {
 		toon_buffer[(y*SCREEN_W+x)] = c;
 	}	
 }
-
 void toon_mask_line(int x0, int y0, int x1, int y1, float wd) {
 	int dx = iabs(x1-x0), sx = x0 < x1 ? 1 : -1; 
 	int dy = iabs(y1-y0), sy = y0 < y1 ? 1 : -1; 
@@ -199,7 +186,6 @@ void toon_mask_line(int x0, int y0, int x1, int y1, float wd) {
 		}
 	}
 }
-
 void toon(double* depth_buffer) {
 	double thresh = 1.0008;
 

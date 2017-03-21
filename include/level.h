@@ -20,13 +20,15 @@ public:
 	double width;
 	double height;
 	
+	uint32_t color;
+	
 	int u, d, l, r;
 	
 	Matrix surface_to_world;
 	
 	Surface();
-	Surface(Vector, Vector, double, double);
-	Surface(Vector, Vector, double, double, int, int, int, int);
+	Surface(Vector, Vector, double, double, uint32_t);
+	Surface(Vector, Vector, double, double, int, int, int, int, uint32_t);
 	
 	int can_move(const Vector&);
 	Vector world_pos(const Vector&);

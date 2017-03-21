@@ -43,7 +43,7 @@ public:
 	
 	void draw_triangle(Vector, Vector, Vector, uint32_t);
 	
-	void draw_model_3d(const Model&, uint32_t);
+	void draw_model_3d(const Model&);
 	
 	void clear_depth_buffer();
 };

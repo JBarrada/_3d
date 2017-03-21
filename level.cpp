@@ -13,12 +13,14 @@ Surface::Surface() {
 	r = -1;
 }
 
-Surface::Surface(Vector pos, Vector up, double width, double height) {
+Surface::Surface(Vector pos, Vector up, double width, double height, uint32_t color) {
 	this->pos = pos;
 	this->up = up;
 	
 	this->width = width;
 	this->height = height;
+	
+	this->color = color;
 	
 	this->u = -1;
 	this->d = -1;
@@ -35,12 +37,14 @@ Surface::Surface(Vector pos, Vector up, double width, double height) {
 	generate_face();
 }
 
-Surface::Surface(Vector pos, Vector up, double width, double height, int u, int d, int l, int r) {
+Surface::Surface(Vector pos, Vector up, double width, double height, int u, int d, int l, int r, uint32_t color) {
 	this->pos = pos;
 	this->up = up;
 	
 	this->width = width;
 	this->height = height;
+	
+	this->color = color;
 	
 	this->u = u;
 	this->d = d;
@@ -68,7 +72,7 @@ void Surface::generate_face() {
 	c = (surface_to_world * Matrix(c)).get_vector() + pos;
 	d = (surface_to_world * Matrix(d)).get_vector() + pos;
 	
-	m = create_face(a, b, c, d);
+	m = create_face(a, b, c, d, color);
 }
 
 int Surface::can_move(const Vector& v) {
