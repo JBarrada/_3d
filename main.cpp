@@ -117,10 +117,10 @@ void keyboard(unsigned char key, int x, int y) {
 void draw() {
 	threed.clear_depth_buffer();
 	
-	threed.draw_model_3d(player, get_byte_color(255, 0, 0));
+	threed.draw_model_3d(player, get_32bit_color(255, 0, 0));
 	
 	for (int i=0; i < test_level.surfaces_count; i++) {
-		threed.draw_model_3d(test_level.surfaces[i].m, get_byte_color(255, 255, 255));
+		threed.draw_model_3d(test_level.surfaces[i].m, get_32bit_color(255, 255, 255));
 	}
 	
 	/*
@@ -129,12 +129,13 @@ void draw() {
 	printf("END-SURFACE\n");
 	*/
 	
-	threed.draw_model_3d(x_cube, get_byte_color(0, 0, 255));
-	threed.draw_model_3d(y_cube, get_byte_color(0, 255, 0));
-	threed.draw_model_3d(z_cube, get_byte_color(255, 0, 0));
+	threed.draw_model_3d(x_cube, get_32bit_color(0, 0, 255));
+	threed.draw_model_3d(y_cube, get_32bit_color(0, 255, 0));
+	threed.draw_model_3d(z_cube, get_32bit_color(255, 0, 0));
 	
-	//shade(threed.depth_buffer);
+	shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
+	dither();
 }
 
 void load_model(char* file, Model* model) {

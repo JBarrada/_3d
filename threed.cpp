@@ -50,13 +50,13 @@ Vector ThreeD::get_projected(Vector a) {
 	return p_v;
 }
 
-void ThreeD::draw_point(Vector a, uint8_t c) {
+void ThreeD::draw_point(Vector a, uint32_t c) {
 	if (((int)a.y>=SCREEN_H) || ((int)a.y<0) || ((int)a.x>=SCREEN_W) || ((int)a.x<0))
 		return;
 	
 	unsigned int offset = a.y*SCREEN_W+a.x;
 	if (a.z > depth_buffer[offset]) {
-		set_pixel(a.x, a.y, c);
+		set_pixel_32bit(a.x, a.y, c);
 		depth_buffer[offset] = a.z;
 	}
 }
@@ -66,7 +66,7 @@ void ThreeD::draw_point_3d(Vector a, uint8_t c) {
 	draw_point(p_v, c);
 }
 
-void ThreeD::draw_line(Vector pa, Vector pb, uint8_t c) {
+void ThreeD::draw_line(Vector pa, Vector pb, uint32_t c) {
 	if (pa.x > pb.x) swap(&pa, &pb);
 	
 	pa.x = round(pa.x);
@@ -92,7 +92,7 @@ void ThreeD::draw_line_3d(Vector pa, Vector pb, uint8_t c) {
 	line(p_pa.x, p_pa.y, p_pb.x, p_pb.y, c);
 }
 
-void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
+void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint32_t c) {
 	p1.x = round(p1.x);
 	p2.x = round(p2.x);
 	p3.x = round(p3.x);
@@ -125,7 +125,7 @@ void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint8_t c) {
 	toon_mask_line(p3.x, p3.y, p2.x, p2.y, 5.0);
 }
 
-void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
+void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 	for (int y=dmax(pc.y,0); y<=dmin(pa.y, SCREEN_H); y++) {
 		double gradient = (y-pc.y)/(double)(pa.y-pc.y);
 		double x1 = interpolate(pc.x, pa.x, gradient);
@@ -136,7 +136,7 @@ void ThreeD::tft(Vector pa, Vector pb, Vector pc, uint8_t c) {
 	}
 }
 
-void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint8_t c) {
+void ThreeD::bft(Vector pa, Vector pb, Vector pc, uint32_t c) {
 	pb.y = round(pb.y);
 	for (int y=dmin(pa.y, SCREEN_H); y>=dmax(pb.y, 0); y--) {
 		double gradient = (pa.y-y)/(double)(pa.y-pb.y);
@@ -155,15 +155,13 @@ Vector ray_plane_intersect(Vector& a, Vector& b, Vector& n, double d) {
 	double n_ba = n.dot(ba);
 	return a + (ba * ((d - n_a)/n_ba));
 }
-
-
 double point_plane_side(Vector&a, Vector& b, Vector& n) {
 	Vector ba = b - a;
 	return ba.dot(n);
 }
 
 
-void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
+void ThreeD::draw_model_3d(const Model& m, uint32_t c) {
 	Vector points_t[m.points_count];
 	Vector points_p[m.points_count];
 	
@@ -211,7 +209,7 @@ void ThreeD::draw_model_3d(const Model& m, uint8_t c) {
 				}
 			}
 			
-			uint8_t i_color = interpolate_color(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/2.0));
+			uint32_t i_color = interpolate_color_32bit(c, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/2.0));
 
 			if (num_behind == 0) {
 				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], i_color);

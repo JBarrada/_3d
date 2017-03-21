@@ -19,13 +19,17 @@ struct point {
 void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y));
 
 uint8_t get_byte_color(uint8_t r, uint8_t g, uint8_t b);
+uint32_t get_32bit_color(uint8_t r, uint8_t g, uint8_t b);
 uint8_t get_byte_color(uint32_t color);
+uint32_t interpolate_color_32bit(uint32_t c, double value);
 uint8_t interpolate_color(uint8_t c, double value);
 
 void set_pixel(int, int, uint8_t);
+void set_pixel_32bit(int x, int y, uint32_t c);
 
 void shade(double*); 
 void toon(double*);
+void dither();
 
 void toon_set_pixel(int x, int y, uint8_t c);
 void toon_mask_line(int x0, int y0, int x1, int y1, float wd);
