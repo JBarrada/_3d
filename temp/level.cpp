@@ -1,5 +1,5 @@
 #include "level.h"
-/*
+
 Surface::Surface() {
 	pos = (Vector){0,0,0};
 	up = (Vector){0,0,1};
@@ -29,8 +29,8 @@ Surface::Surface(Vector pos, Vector up, double width, double height, uint32_t co
 	
 	surface_to_world = (Matrix)IDENTITY;
 	if (!(up.x == 0 && up.y == 0 && up.z == 1)) {
-		Vector axis = up.cross((Vector){0,0,-1});
-		double cos_angle = up.dot((Vector){0,0,-1});
+		Vector axis = up.cross((Vector){0,0,1});
+		double cos_angle = up.dot((Vector){0,0,1});
 		surface_to_world = surface_to_world.rotated_3d(axis, cos_angle+1, cos_angle);
 	}
 	
@@ -94,60 +94,65 @@ int Surface::can_move(const Vector& v) {
 Vector Surface::world_pos(const Vector& v) {
 	return (surface_to_world * Matrix(v)).get_vector() + pos;
 }
-*/
+
 
 
 Level::Level() {
-
-}
-
-Level::Level(Model m) {
-	this->m = m;
-	
 	current_surface = 0;
-	surface_pos = (Vector){0,0,0};
-	world_pos = (Vector){0,0,0};
-	
-	generate_level();
+	surface_position = (Vector){1,1,0};
+	world_position = (Vector){1,1,0};
 }
 
-int Level::find_neighbor(int p1, int p2, int avoid) {
-	for (int t=0; t<m.triangles_count; t++) {
-		if (t != avoid) {
-			int match_count = 0;
-			if (p1 == m.triangles[t].a || p2 == m.triangles[t].a) match_count++;
-			if (p1 == m.triangles[t].b || p2 == m.triangles[t].b) match_count++;
-			if (p1 == m.triangles[t].c || p2 == m.triangles[t].c) match_count++;
-			if (match_count >= 2) {
-				return t;
-			}
+bool Level::move(Vector step) {
+	Vector next = surface_position + step;
+	
+	if (next.x < 0) {
+		if (surfaces[current_surface].l != -1) {
+			surface_position = next;
+			current_surface = surfaces[current_surface].l;
+			surface_position.x += surfaces[current_surface].width;
+			world_position = surfaces[current_surface].world_pos(surface_position);
+			return true;
+		} else {
+			return false;
 		}
 	}
-	return -1;
-}
-
-void Level::generate_level() {
-	this->surfaces = new Surface[m.triangles_count];
-	
-	for (int t=0; t<m.triangles_count; t++) {
-		this->surfaces[t].ab = find_neighbor(m.triangles[t].a, m.triangles[t].b, t);
-		this->surfaces[t].bc = find_neighbor(m.triangles[t].b, m.triangles[t].c, t);
-		this->surfaces[t].ca = find_neighbor(m.triangles[t].c, m.triangles[t].a, t);
+	if (next.x >= surfaces[current_surface].width) {
+		if (surfaces[current_surface].r != -1) {
+			surface_position = next;
+			surface_position.x -= surfaces[current_surface].width;
+			current_surface = surfaces[current_surface].r;
+			world_position = surfaces[current_surface].world_pos(surface_position);
+			return true;
+		} else {
+			return false;
+		}
 	}
-}
-
-bool move(Vector& step) {
-	Vector test_pos = (Vector)surface_pos + step;
+	if (next.y < 0) {
+		if (surfaces[current_surface].d != -1) {
+			surface_position = next;
+			current_surface = surfaces[current_surface].d;
+			surface_position.y += surfaces[current_surface].height;
+			world_position = surfaces[current_surface].world_pos(surface_position);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	if (next.y >= surfaces[current_surface].height) {
+		if (surfaces[current_surface].u != -1) {
+			surface_position = next;
+			surface_position.y -= surfaces[current_surface].height;
+			current_surface = surfaces[current_surface].u;
+			world_position = surfaces[current_surface].world_pos(surface_position);
+			return true;
+		} else {
+			return false;
+		}
+	}
 	
-	// make point a origin
-	Vector a = (Vector)m.points[m.triangles[current_surface].a];
-	Vector b = (Vector)m.points[m.triangles[current_surface].b];
-	Vector c = (Vector)m.points[m.triangles[current_surface].c];
-	// todo normal transform to surface space
-	c -= a;
-	b -= a;
-	a -= a;
+	surface_position = next;
+	world_position = surfaces[current_surface].world_pos(surface_position);
 	
-	
-	
+	return false;
 }

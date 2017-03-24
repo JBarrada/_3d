@@ -74,7 +74,7 @@ void Model::load_data(char* data, int length) {
 					int z_start = next_non_whitespace(data, y_start);
 					v.z = atod(data+z_start);
 					
-					v *= -1;
+					//v *= -1; // TODO PROBABLY NOT RIGHT
 					
 					normals[normals_count] = v;
 					normals_count++; 
@@ -200,13 +200,13 @@ Model create_face(Vector a, Vector b, Vector c, Vector d, uint32_t color) {
 
 Model create_face(Vector pos, double width, double height, Vector up, uint32_t color) {
 	Vector a = (Vector){0,0,0};
-	Vector b = (Vector){0, height, 0};
+	Vector b = (Vector){width, 0, 0};
 	Vector c = (Vector){width, height, 0};
-	Vector d = (Vector){width, 0, 0};
+	Vector d = (Vector){0, height, 0};
 	
 	if (!(up.x == 0 && up.y == 0 && up.z == 1)) {
-		Vector axis = up.cross((Vector){0,0,1});
-		double cos_angle = up.dot((Vector){0,0,1});
+		Vector axis = up.cross((Vector){0,0,-1});
+		double cos_angle = up.dot((Vector){0,0,-1});
 		Matrix transform = IDENTITY.rotated_3d(axis, cos_angle+1, cos_angle);
 		a = (transform * Matrix(a)).get_vector();
 		b = (transform * Matrix(b)).get_vector();
@@ -235,14 +235,14 @@ Model create_box(Vector c, double lx, double ly, double lz, uint32_t color) {
 	
 	m.points = new Vector[m.points_count];
 	m.points[0] = (Vector){c.x - lx2, c.y + ly2, c.z - lz2};
-	m.points[1] = (Vector){c.x + lx2, c.y + ly2, c.z - lz2};
+	m.points[1] = (Vector){c.x - lx2, c.y - ly2, c.z - lz2};
 	m.points[2] = (Vector){c.x + lx2, c.y - ly2, c.z - lz2};
-	m.points[3] = (Vector){c.x - lx2, c.y - ly2, c.z - lz2};
+	m.points[3] = (Vector){c.x + lx2, c.y + ly2, c.z - lz2};
 	
 	m.points[4] = (Vector){c.x - lx2, c.y + ly2, c.z + lz2};
-	m.points[5] = (Vector){c.x + lx2, c.y + ly2, c.z + lz2};
+	m.points[5] = (Vector){c.x - lx2, c.y - ly2, c.z + lz2};
 	m.points[6] = (Vector){c.x + lx2, c.y - ly2, c.z + lz2};
-	m.points[7] = (Vector){c.x - lx2, c.y - ly2, c.z + lz2};
+	m.points[7] = (Vector){c.x + lx2, c.y + ly2, c.z + lz2};
 	
 	m.normals = new Vector[m.normals_count];
 	m.normals[0] = calculate_surface_normal(m.points[2], m.points[1], m.points[0]);

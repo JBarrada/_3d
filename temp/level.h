@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/*
 class Surface {
 private:
 	void generate_face();
@@ -34,33 +33,18 @@ public:
 	int can_move(const Vector&);
 	Vector world_pos(const Vector&);
 };
-*/
-
-class Surface {
-public:
-	int ab;
-	int bc;
-	int ca;
-	
-	void print() {printf("AB: %d BC: %d CA: %d\n", ab, bc, ca);};
-};
 
 class Level {
 public:
-	Model m;
-	Surface* surfaces;
-	
-	Level();
-	Level(Model m);
+	Surface *surfaces;
+	int surfaces_count;
 	
 	int current_surface;
-	Vector surface_pos;
-	Vector world_pos;
+	Vector surface_position;
+	Vector world_position;
 	
-	bool move(Vector& step);
-	
-	int find_neighbor(int p1, int p2, int avoid);
-	void generate_level();
+	Level();	
+	bool move(Vector);
 };
 
 #endif
