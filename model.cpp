@@ -1,5 +1,8 @@
 #include "model.h"
 
+char default_string[] = "DEFAULT";
+char usemtl_string[] = "usemtl";
+
 Model::Model() {
 	points_count = 0;
 	normals_count = 0;
@@ -36,7 +39,7 @@ void Model::load_data(char* data, int length) {
 					break;
 				}
 			case 'u':
-				if (starts_with(data+i, "usemtl")) {
+				if (starts_with(data+i, usemtl_string)) {
 					materials_count++;
 				} else {
 					break;
@@ -96,7 +99,7 @@ void Model::load_data(char* data, int length) {
 				}
 			
 			case 'u':
-				if (starts_with(data+i, "usemtl")) {
+				if (starts_with(data+i, usemtl_string)) {
 					int name_start = next_whitespace(data, i) + 1;
 					int name_end = next_whitespace(data, name_start);
 					int name_length = name_end-name_start;
@@ -193,7 +196,7 @@ Model create_face(Vector a, Vector b, Vector c, Vector d, uint32_t color) {
 	m.triangles[1] = (Triangle) {0, 2, 3, 0, 0};
 	
 	m.materials = new Material[1];
-	m.materials[0] = (Material) {"default", color};
+	m.materials[0] = (Material) {default_string, color};
 	
 	return m;
 }
@@ -274,7 +277,7 @@ Model create_box(Vector c, double lx, double ly, double lz, uint32_t color) {
 	m.triangles[11] = (Triangle){1, 6, 5, 5, 0};
 
 	m.materials = new Material[1];
-	m.materials[0] = (Material) {"default", color};
+	m.materials[0] = (Material) {default_string, color};
 	
 	return m;
 }

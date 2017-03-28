@@ -107,8 +107,12 @@ Level::Level(Model m) {
 	current_surface = 0;
 	surface_pos = (Vector){0,0,0};
 	world_pos = (Vector){0,0,0};
+	world_up = (Vector){0,0,1};
 	
 	generate_level();
+	
+	this->world_pos = (this->s_to_n[m.triangles[current_surface].normal] * Matrix(this->surface_pos)).get_vector();
+	this->world_up = (Vector)m.normals[m.triangles[current_surface].normal];
 }
 
 int Level::find_neighbor(int p1, int p2, int avoid) {
@@ -134,20 +138,138 @@ void Level::generate_level() {
 		this->surfaces[t].bc = find_neighbor(m.triangles[t].b, m.triangles[t].c, t);
 		this->surfaces[t].ca = find_neighbor(m.triangles[t].c, m.triangles[t].a, t);
 	}
+	
+	this->s_to_n = new Matrix[m.normals_count];
+	
+	for (int n=0; n<m.normals_count; n++) {
+		this->s_to_n[n] = (Matrix)IDENTITY;
+		if (!(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == 1)) {
+			Vector axis = m.normals[n].cross((Vector){0,0,1});
+			double cos_angle = m.normals[n].dot((Vector){0,0,1});
+			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, cos_angle+1, cos_angle);
+		}
+	}
+	
+	this->n_to_s = new Matrix[m.normals_count];
+	
+	Vector up(0,0,1);
+	for (int n=0; n<m.normals_count; n++) {
+		this->n_to_s[n] = (Matrix)IDENTITY;
+		if (!(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == 1)) {
+			Vector axis = up.cross(m.normals[n]);
+			double cos_angle = up.dot(m.normals[n]);
+			this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, cos_angle+1, cos_angle);
+		}
+	}
+	
 }
 
-bool move(Vector& step) {
+
+float tri_sign(Vector& p1, Vector& p2, Vector& p3) {
+  return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool point_in_triangle(Vector& pt, Vector& v1, Vector& v2, Vector& v3) {
+  bool b1, b2, b3;
+
+  float v1_v2_sign = tri_sign(pt, v1, v2);
+  float v2_v3_sign = tri_sign(pt, v2, v3);
+  float v3_v1_sign = tri_sign(pt, v3, v1);
+  
+  b1 = tri_sign(pt, v1, v2) < 0.0f;
+  b2 = tri_sign(pt, v2, v3) < 0.0f;
+  b3 = tri_sign(pt, v3, v1) < 0.0f;
+  
+  printf("v1_v2: %f v2_v3: %f v3_v1: %f ", v1_v2_sign, v2_v3_sign, v3_v1_sign);
+  
+  return ((b1 == b2) && (b2 == b3));
+}
+
+bool Level::move(Vector& step) {
 	Vector test_pos = (Vector)surface_pos + step;
 	
-	// make point a origin
 	Vector a = (Vector)m.points[m.triangles[current_surface].a];
 	Vector b = (Vector)m.points[m.triangles[current_surface].b];
 	Vector c = (Vector)m.points[m.triangles[current_surface].c];
-	// todo normal transform to surface space
-	c -= a;
-	b -= a;
-	a -= a;
 	
+	/*
+	a.print();
+	b.print();
+	c.print();
+	*/
 	
+	// normal transform to surface space
+	a = (this->n_to_s[m.triangles[current_surface].normal] * Matrix(a)).get_vector();
+	b = (this->n_to_s[m.triangles[current_surface].normal] * Matrix(b)).get_vector();
+	c = (this->n_to_s[m.triangles[current_surface].normal] * Matrix(c)).get_vector();
 	
+	/*
+	a.print();
+	b.print();
+	c.print();
+	*/
+	
+	bool ab_sign = tri_sign(test_pos, a, b) < 0.0;
+	bool bc_sign = tri_sign(test_pos, b, c) < 0.0;
+	bool ca_sign = tri_sign(test_pos, c, a) < 0.0;
+	
+	bool majority_sign = (ab_sign + bc_sign + ca_sign) > 1;
+	
+	if ((ab_sign == bc_sign) && (bc_sign == ca_sign)) {
+		this->surface_pos.x = test_pos.x;
+		this->surface_pos.y = test_pos.y;
+		
+		this->world_pos = (this->s_to_n[m.triangles[current_surface].normal] * Matrix(this->surface_pos)).get_vector();
+		this->world_up = (Vector)m.normals[m.triangles[current_surface].normal];
+		return false;
+	} else {
+		if (ab_sign != majority_sign) {
+			if (surfaces[current_surface].ab == -1) {
+				return false;
+			} else {
+				current_surface = surfaces[current_surface].ab;
+			}
+		}else if (bc_sign != majority_sign) {
+			if (surfaces[current_surface].bc == -1) {
+				return false;
+			} else {
+				current_surface = surfaces[current_surface].bc;
+			}
+		}else if (ca_sign != majority_sign) {
+			if (surfaces[current_surface].ca == -1) {
+				return false;
+			} else {
+				current_surface = surfaces[current_surface].ca;
+			}
+		}
+	}
+	
+	for (int t=0; t<m.triangles_count; t++) {
+		if (t == current_surface) {
+			m.triangles[t].mtl = 0;
+		} else if (t == surfaces[current_surface].ab) {
+			m.triangles[t].mtl = 1;
+		} else if (t == surfaces[current_surface].bc) {
+			m.triangles[t].mtl = 2;
+		} else if (t == surfaces[current_surface].ca) {
+			m.triangles[t].mtl = 3;
+		} else {
+			m.triangles[t].mtl = 0;
+		}
+	}
+	
+	printf("ab: %d bc: %d bc: %d \n", ab_sign, bc_sign, ca_sign);
+	
+	this->surface_pos.x = test_pos.x;
+	this->surface_pos.y = test_pos.y;
+	
+	this->world_pos = (this->s_to_n[m.triangles[current_surface].normal] * Matrix(this->surface_pos)).get_vector();
+	this->world_up = (Vector)m.normals[m.triangles[current_surface].normal];
+	
+	surface_pos.print();
+	world_pos.print();
+	printf("CURRENT SURFACE: %d\n", current_surface);
+	printf("AB(RED): %d BC(GREEN): %d CA(BLUE): %d\n", surfaces[current_surface].ab, surfaces[current_surface].bc, surfaces[current_surface].ca);
+	
+	return true;
 }

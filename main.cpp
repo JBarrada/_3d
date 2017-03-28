@@ -42,11 +42,12 @@ void idle() {
 	d_camera_position.x += (camera_position.x - d_camera_position.x) / smooth_speed;
 	d_camera_position.y += (camera_position.y - d_camera_position.y) / smooth_speed;
 	d_camera_position.z += (camera_position.z - d_camera_position.z) / smooth_speed;
-	
 
 	d_player_up.x += (player_up.x - d_player_up.x) / smooth_speed;
 	d_player_up.y += (player_up.y - d_player_up.y) / smooth_speed;
 	d_player_up.z += (player_up.z - d_player_up.z) / smooth_speed;
+	
+	d_player_up.norm();
 	
 	d_player_position.x += (player_position.x - d_player_position.x) / smooth_speed * 2.0;
 	d_player_position.y += (player_position.y - d_player_position.y) / smooth_speed * 2.0;
@@ -55,9 +56,19 @@ void idle() {
 	
 	player.transform = IDENTITY.translated(d_player_position).rotated_3d(player_up, player_direction);
 	
-	camera_position = (Vector)d_player_position;
-	camera_position += IDENTITY.rotated_3d(player_up * -1, player_direction).get_vector() * -camera_follow;
-	camera_position += (player_up * camera_height);
+	
+	//camera_position = (Vector)d_player_position;
+	//camera_position += IDENTITY.rotated_3d(player_up * -1, player_direction).get_vector() * -camera_follow;
+	//camera_position += (player_up * camera_height);
+	Matrix camera_matrix((Vector){cos(player_direction)*-camera_follow, sin(player_direction)*-camera_follow, camera_height});
+	if (!(player_up.x == 0 && player_up.y == 0 && player_up.z == 1)) {
+		Vector axis = player_up.cross((Vector){0,0,1});
+		double cos_angle = player_up.dot((Vector){0,0,1});
+		camera_matrix = camera_matrix.rotated_3d(axis, cos_angle+1, cos_angle);
+	}
+	
+	camera_position = camera_matrix.get_vector() + (Vector)d_player_position;
+	
 	
 	Matrix v_matrix = look_at_camera(d_camera_position, d_player_position, d_player_up);
 	threed.update_v_matrix(v_matrix);
@@ -80,6 +91,9 @@ void keyboard(unsigned char key, int x, int y) {
 		//player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
 		
+		test_level.move(step);
+		player_position = test_level.world_pos;
+		player_up = test_level.world_up;
 		/*
 		test_level.move(step);
 		player_position = test_level.world_position;
@@ -89,8 +103,11 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	if (key == 's') {
 		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
-		Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
+		Vector step(cos(player_direction)*-0.2, sin(player_direction)*-0.2, 0);
 		
+		test_level.move(step);
+		player_position = test_level.world_pos;
+		player_up = test_level.world_up;
 		/*
 		test_level.move(step * -1);
 		player_position = test_level.world_position;
@@ -157,10 +174,31 @@ int main() {
 	y_cube = create_box((Vector){0,1,0}, 0.2, 0.2, 0.2, 0x00ff00);
 	z_cube = create_box((Vector){0,0,1}, 0.2, 0.2, 0.2, 0xff0000);
 	
-	
+	/*
 	Model plane = create_face((Vector){0,0,0}, 8, 8, (Vector){0,0,1}, 0xffffff);
+	plane.materials_count = 2;
+	plane.materials = new Material[2];
+	char test_mtl[] = "TEST";
+	plane.materials[0] = (Material) {test_mtl, 0xff00ff};
+	plane.materials[1] = (Material) {test_mtl, 0xffff00};
+	plane.triangles[0].mtl = 0;
+	plane.triangles[1].mtl = 1;
 	test_level = Level(plane);
+	*/
 	
+	Model cube = create_box((Vector){-4,4,-4}, 8, 8, 8, 0xffffff);
+	
+	cube.materials_count = 4;
+	cube.materials = new Material[4];
+	char test_mtl[] = "TEST";
+	cube.materials[0] = (Material) {test_mtl, 0xffffff};
+	cube.materials[1] = (Material) {test_mtl, 0x0000ff};
+	cube.materials[2] = (Material) {test_mtl, 0x00ff00};
+	cube.materials[3] = (Material) {test_mtl, 0xff0000};
+	cube.triangles[3].mtl = 1;
+	
+	test_level = Level(cube);
+	test_level.current_surface = 3;
 	//test_level.m.print();
 	
 	

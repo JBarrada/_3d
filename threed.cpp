@@ -56,7 +56,7 @@ void ThreeD::draw_point(Vector a, uint32_t c) {
 	}
 }
 
-void ThreeD::draw_point_3d(Vector a, uint8_t c) {
+void ThreeD::draw_point_3d(Vector a, uint32_t c) {
 	Vector p_v = get_projected(a);
 	draw_point(p_v, c);
 }

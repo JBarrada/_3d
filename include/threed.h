@@ -36,7 +36,7 @@ public:
 	bool on_screen(const Vector&);
 	
 	void draw_point(Vector, uint32_t);
-	void draw_point_3d(Vector, uint8_t);
+	void draw_point_3d(Vector, uint32_t);
 	
 	void draw_line(Vector, Vector, uint32_t);
 	void draw_line_3d(Vector, Vector, uint8_t);
