@@ -25,6 +25,8 @@ public:
 	double render_w, render_h;
 	double depth_buffer[SCREEN_W*SCREEN_H];
 	
+	bool backface_cull;
+	
 	ThreeD();
 	void init(Matrix, Matrix, double, double);
 	

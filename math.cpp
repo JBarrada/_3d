@@ -20,6 +20,20 @@ double atan(double x) {
     return M_PI_4*x - x*(dabs(x) - 1)*(0.2447 + 0.0663*dabs(x));
 }
 
+double atan2(double y, double x) {
+	if (x == 0.0) 
+		return (y > 0.0) ? M_PI_2 : -M_PI_2;
+	
+	double u = atan(y / x);
+	if( x < 0.0 ) {
+		if( u > 0.0 )
+			u -= M_PI;
+		else
+			u += M_PI;
+	}
+	return u;
+}
+
 double dabs(double x) {
 	if (x < 0)
 		return -1*x;

@@ -11,6 +11,8 @@ void ThreeD::init(Matrix p, Matrix v, double render_w, double render_h) {
 
 	this->render_w = render_w;
 	this->render_h = render_h;
+	
+	backface_cull = true;
 }
 
 void ThreeD::update_v_matrix(Matrix v) {
@@ -179,7 +181,7 @@ void ThreeD::draw_model_3d(const Model& m) {
 	
 	// frustum clipping
 	for (int i=0; i < m.triangles_count; i++) {
-		if (camera_angles[m.triangles[i].normal] >= 0.4) {
+		if ((camera_angles[m.triangles[i].normal] >= 0.4 && backface_cull) || (!backface_cull)) {
 			int projected[] = {m.triangles[i].a, m.triangles[i].b, m.triangles[i].c};
 
 			int num_behind = 0;
@@ -196,7 +198,7 @@ void ThreeD::draw_model_3d(const Model& m) {
 			}
 			
 			uint32_t color = m.materials[m.triangles[i].mtl].color;
-			uint32_t i_color = interpolate_color_32bit(color, 1.0 - (dmin(camera_angles[m.triangles[i].normal], 0.5)/1.5));
+			uint32_t i_color = interpolate_color_32bit(color, 1.0 - (dmin(camera_angles[m.triangles[i].normal] - 0.4, 0.5)/1.5));
 
 			if (num_behind == 0) {
 				draw_triangle(points_p[m.triangles[i].a], points_p[m.triangles[i].b], points_p[m.triangles[i].c], i_color);

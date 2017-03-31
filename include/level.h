@@ -60,13 +60,18 @@ public:
 	Vector world_pos;
 	Vector world_up;
 	
-	bool move(Vector& step);
+	double player_dir;
+	double player_step_size;
+	
+	Vector transform_n_to_s(Vector& v, int s);
+	Vector transform_s_to_n(Vector& v, int s);
+	
+	bool move(bool forward);
 	
 	int find_neighbor(int p1, int p2, int avoid);
 	void generate_level();
 };
 
 float tri_sign(Vector& p1, Vector& p2, Vector& p3);
-bool point_in_triangle(Vector& pt, Vector& v1, Vector& v2, Vector& v3);
 
 #endif

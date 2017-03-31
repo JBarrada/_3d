@@ -62,6 +62,10 @@ Vector Vector::operator/=(double d) {
 	return *this;
 }
 
+bool Vector::operator==(const Vector& b) {
+	return ((this->x == b.x) && (this->y == b.y) && (this->z == b.z));
+}
+
 double Vector::dot(const Vector& b) {
 	return this->x * b.x + this->y * b.y + this->z * b.z;
 }
@@ -116,3 +120,20 @@ Vector calculate_surface_normal(Vector& a, Vector& b, Vector& c) {
 	return normal;
 }
 
+Vector intersect(Vector& pa1, Vector& pb1, Vector& pa2, Vector& pb2) {
+	double a1 = pb1.y - pa1.y;
+	double b1 = pa1.x - pb1.x;
+	double c1 = a1*pa1.x + b1*pa1.y;
+	
+	double a2 = pb2.y - pa2.y;
+	double b2 = pa2.x - pb2.x;
+	double c2 = a2*pa2.x + b2*pa2.y;
+	
+	double det = a1*b2 - a2*b1;
+	
+	if (det == 0) {
+		return (Vector){0,0,0}; // parallel
+	} else {
+		return (Vector){(b2*c1 - b1*c2) / det, (a1*c2 - a2*c1) / det, 0};
+	}
+}
