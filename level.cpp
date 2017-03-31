@@ -162,6 +162,7 @@ void Level::generate_level() {
 	
 	this->n_to_s = new Matrix[m.normals_count];
 	
+	/*
 	Vector up(0,0,1);
 	for (int n=0; n<m.normals_count; n++) {
 		this->n_to_s[n] = (Matrix)IDENTITY;
@@ -183,6 +184,17 @@ void Level::generate_level() {
 			//debug
 			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis * -1, cos_angle+1, cos_angle);
 		}
+	}
+	*/
+	
+	// maybe better https://www.gamedev.net/topic/61727-aligning-two-vectors/
+	for (int n=0; n<m.normals_count; n++) {
+		this->n_to_s[n] = (Matrix)IDENTITY;
+		
+		Vector axis(m.normals[n].y, -m.normals[n].x, 0);
+		double angle = m.normals.z;
+
+		this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, cos_angle+1, cos_angle);
 	}
 	
 }
