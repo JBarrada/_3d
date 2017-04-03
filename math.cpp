@@ -20,6 +20,7 @@ double atan(double x) {
     return M_PI_4*x - x*(dabs(x) - 1)*(0.2447 + 0.0663*dabs(x));
 }
 
+/*
 double atan2(double y, double x) {
 	if (x == 0.0) 
 		return (y > 0.0) ? M_PI_2 : -M_PI_2;
@@ -32,6 +33,22 @@ double atan2(double y, double x) {
 			u += M_PI;
 	}
 	return u;
+}
+*/
+
+double atan2(double y, double x) {
+	double coeff_1 = M_PI / 4.0;
+	double coeff_2 = 3.0 * coeff_1;
+	double abs_y = dabs(y);
+	double angle;
+	if (x >= 0.0) {
+		double r = (x - abs_y) / (x + abs_y);
+		angle = coeff_1 - coeff_1 * r;
+	} else {
+		double r = (x + abs_y) / (abs_y - x);
+		angle = coeff_2 - coeff_1 * r;
+	}
+	return y < 0.0 ? -angle : angle;
 }
 
 double acos(double x) {

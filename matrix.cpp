@@ -232,7 +232,7 @@ Matrix align_vectors(Vector& a, Vector& b) {
 	if (a == b) {
 		return (Matrix)IDENTITY;
 	} else if (a == (b * -1)) {
-		Vector axis = b.cross((Vector){a.y, a.z, a.x});
+		Vector axis = b.cross((Vector){a.y, a.z, a.x}) * -1;
 		double angle = M_PI;
 		return (Matrix)IDENTITY.rotated_3d(axis, angle);
 	} else {

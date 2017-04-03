@@ -13,6 +13,7 @@ class ThreeD {
 private:
 	void tft(Vector, Vector, Vector, uint32_t);
 	void bft(Vector, Vector, Vector, uint32_t);
+	bool triangle_on_screen(Vector& p1, Vector& p2, Vector& p3);
 public:
 	Matrix p_matrix;
 	Matrix v_matrix;

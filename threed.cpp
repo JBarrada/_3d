@@ -89,7 +89,32 @@ void ThreeD::draw_line_3d(Vector pa, Vector pb, uint8_t c) {
 	line(p_pa.x, p_pa.y, p_pb.x, p_pb.y, c);
 }
 
+bool ThreeD::triangle_on_screen(Vector& p1, Vector& p2, Vector& p3) {
+	Vector points[3] = {p1, p2, p3};
+	int num_ortho[4] = {0,0,0,0};
+			
+	for (int p = 0; p < 3; p++) {		
+		if (points[p].x < 0) {
+			num_ortho[0] += 1;
+		}
+		if (points[p].x > SCREEN_W) {
+			num_ortho[1] += 1;
+		}
+		if (points[p].y < 0) {
+			num_ortho[2] += 1;
+		}
+		if (points[p].y > SCREEN_H) {
+			num_ortho[3] += 1;
+		}
+	}
+	
+	return !(num_ortho[0] == 3 || num_ortho[1] == 3 || num_ortho[2] == 3 || num_ortho[3] == 3);
+}
+
 void ThreeD::draw_triangle(Vector p1, Vector p2, Vector p3, uint32_t c) {
+	if (!triangle_on_screen(p1, p2, p3))
+		return;
+	
 	p1.x = round(p1.x);
 	p2.x = round(p2.x);
 	p3.x = round(p3.x);
@@ -212,6 +237,7 @@ void ThreeD::draw_model_3d(const Model& m) {
 
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c1_p, i_color);
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c2_p, i_color);
+				num_clipped++;
 			}
 			if (num_behind == 2) {
 				Vector b2 = ray_plane_intersect(points_t[projected[front]], points_t[projected[(front+1)%3]], this->np_n, this->np_d);
@@ -221,7 +247,8 @@ void ThreeD::draw_model_3d(const Model& m) {
 				Vector c2_p = get_projected(c2);
 				
 				draw_triangle(points_p[projected[front]], b2_p, c2_p, i_color);
-			}		
+				num_clipped++;
+			}
 		}
 	}
 }

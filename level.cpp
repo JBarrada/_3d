@@ -151,7 +151,17 @@ void Level::generate_level() {
 		this->n_to_s[n] = (Matrix)IDENTITY;
 		this->s_to_n[n] = (Matrix)IDENTITY;
 		
-		if (!(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == 1) && !(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == -1)) {
+		if (m.normals[n] == up) {
+				
+		} else if (m.normals[n] == (up * -1)) {
+			Vector axis = up.cross((Vector){m.normals[n].y, m.normals[n].z, m.normals[n].x}) * -1;
+			double angle = M_PI;
+			
+			this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, angle);
+			
+			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, -angle);
+			
+		} else {
 			Vector axis = up.cross(m.normals[n]) * -1;
 			double cos_angle = up.dot(m.normals[n]);
 			double angle = acos(cos_angle);
@@ -161,6 +171,12 @@ void Level::generate_level() {
 			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, -angle);
 		}
 	}
+	
+	Vector a1 = transform_n_to_s(m.points[m.triangles[current_surface].a], current_surface);
+	Vector b1 = transform_n_to_s(m.points[m.triangles[current_surface].b], current_surface);
+	Vector c1 = transform_n_to_s(m.points[m.triangles[current_surface].c], current_surface);
+	
+	surface_pos = (a1 + b1 + c1) / 3.0;
 	
 }
 

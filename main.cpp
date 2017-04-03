@@ -13,8 +13,8 @@
 
 ThreeD threed;
 
-double camera_follow = 30.0;
-double camera_height = 15.0;
+double camera_follow = 15.0;
+double camera_height = 8.0;
 double smooth_speed = 10.0;
 
 Vector player_position(0, 0, 0);
@@ -74,7 +74,22 @@ void idle() {
 	//camera_position += IDENTITY.rotated_3d(player_up * -1, player_direction).get_vector() * -camera_follow;
 	//camera_position += (player_up * camera_height);
 	Matrix camera_matrix((Vector){cos(test_level.player_dir)*-camera_follow, sin(test_level.player_dir)*-camera_follow, camera_height});
+	/*
 	if (!(player_up.x == 0 && player_up.y == 0 && player_up.z == 1)) {
+		Vector axis = player_up.cross((Vector){0,0,1});
+		double cos_angle = player_up.dot((Vector){0,0,1});
+		double angle = acos(cos_angle);
+		camera_matrix = camera_matrix.rotated_3d(axis, angle);
+	}
+	*/
+	
+	if (player_up == default_up) {
+		
+	} else if (player_up == (default_up * -1)) {
+		Vector axis = player_up.cross((Vector){0,1,0});
+		double angle = M_PI;
+		camera_matrix = camera_matrix.rotated_3d(axis, angle);
+	} else {
 		Vector axis = player_up.cross((Vector){0,0,1});
 		double cos_angle = player_up.dot((Vector){0,0,1});
 		double angle = acos(cos_angle);
@@ -108,6 +123,7 @@ void keyboard(unsigned char key, int x, int y) {
 		test_level.move(true);
 		player_position = test_level.world_pos;
 		player_up = test_level.world_up;
+		player_position += ((Vector)player_up * 0.5);
 		//player_direction = test_level.player_dir;
 		/*
 		test_level.move(step);
@@ -123,6 +139,7 @@ void keyboard(unsigned char key, int x, int y) {
 		test_level.move(false);
 		player_position = test_level.world_pos;
 		player_up = test_level.world_up;
+		player_position += ((Vector)player_up * 0.5);
 		//player_direction = test_level.player_dir;
 		/*
 		test_level.move(step * -1);
@@ -331,7 +348,7 @@ int main() {
 	
 	//debug = create_box((Vector){-4,4,-4}, 8, 8, 8, 0xffffff);
 	
-	load_model("ico.obj", &debug);
+	load_model("pig.obj", &debug);
 	test_level = Level(debug);
 	//test_level.current_surface = 3;
 	
@@ -342,7 +359,7 @@ int main() {
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});
 	
 	threed.init(p_matrix, v_matrix, 3.2, 2.0);
-	threed.backface_cull = false;
+	threed.backface_cull = true;
 	
 	gfx_init(idle, draw, keyboard);
 	

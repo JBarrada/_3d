@@ -1,6 +1,6 @@
 # Blender v2.77 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib test.mtl
+mtllib icosa.mtl
 o Icosphere_Icosphere.001
 v 0.000000 0.000000 -6.000000
 v 3.154320 4.341600 -2.683290
