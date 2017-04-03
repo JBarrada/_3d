@@ -237,7 +237,6 @@ void ThreeD::draw_model_3d(const Model& m) {
 
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c1_p, i_color);
 				draw_triangle(points_p[projected[(behind+1)%3]], points_p[projected[(behind+2)%3]], c2_p, i_color);
-				num_clipped++;
 			}
 			if (num_behind == 2) {
 				Vector b2 = ray_plane_intersect(points_t[projected[front]], points_t[projected[(front+1)%3]], this->np_n, this->np_d);
@@ -247,7 +246,6 @@ void ThreeD::draw_model_3d(const Model& m) {
 				Vector c2_p = get_projected(c2);
 				
 				draw_triangle(points_p[projected[front]], b2_p, c2_p, i_color);
-				num_clipped++;
 			}
 		}
 	}

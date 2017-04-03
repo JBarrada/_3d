@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define SCREEN_W 320
-#define SCREEN_H 200
+#define SCREEN_W 640
+#define SCREEN_H 400
 
 struct point {
 	double x, y;
