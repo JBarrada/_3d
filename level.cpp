@@ -1,101 +1,4 @@
 #include "level.h"
-/*
-Surface::Surface() {
-	pos = (Vector){0,0,0};
-	up = (Vector){0,0,1};
-	
-	width = 0;
-	height = 0;
-	
-	u = -1;
-	d = -1;
-	l = -1;
-	r = -1;
-}
-
-Surface::Surface(Vector pos, Vector up, double width, double height, uint32_t color) {
-	this->pos = pos;
-	this->up = up;
-	
-	this->width = width;
-	this->height = height;
-	
-	this->color = color;
-	
-	this->u = -1;
-	this->d = -1;
-	this->l = -1;
-	this->r = -1;
-	
-	surface_to_world = (Matrix)IDENTITY;
-	if (!(up.x == 0 && up.y == 0 && up.z == 1)) {
-		Vector axis = up.cross((Vector){0,0,-1});
-		double cos_angle = up.dot((Vector){0,0,-1});
-		surface_to_world = surface_to_world.rotated_3d(axis, cos_angle+1, cos_angle);
-	}
-	
-	generate_face();
-}
-
-Surface::Surface(Vector pos, Vector up, double width, double height, int u, int d, int l, int r, uint32_t color) {
-	this->pos = pos;
-	this->up = up;
-	
-	this->width = width;
-	this->height = height;
-	
-	this->color = color;
-	
-	this->u = u;
-	this->d = d;
-	this->l = l;
-	this->r = r;
-	
-	surface_to_world = (Matrix)IDENTITY;
-	if (!(up.x == 0 && up.y == 0 && up.z == 1)) {
-		Vector axis = up.cross((Vector){0,0,-1});
-		double cos_angle = up.dot((Vector){0,0,-1});
-		surface_to_world = surface_to_world.rotated_3d(axis, cos_angle+1, cos_angle);
-	}
-	
-	generate_face();
-}
-
-void Surface::generate_face() {
-	Vector a = (Vector){0,0,0};
-	Vector b = (Vector){0, height, 0};
-	Vector c = (Vector){width, height, 0};
-	Vector d = (Vector){width, 0, 0};
-	
-	a = (surface_to_world * Matrix(a)).get_vector() + pos;
-	b = (surface_to_world * Matrix(b)).get_vector() + pos;
-	c = (surface_to_world * Matrix(c)).get_vector() + pos;
-	d = (surface_to_world * Matrix(d)).get_vector() + pos;
-	
-	m = create_face(a, b, c, d, color);
-}
-
-int Surface::can_move(const Vector& v) {
-	if (v.x < 0) {
-		return l;
-	}
-	if (v.x >= width) {
-		return r;
-	}
-	if (v.y < 0) {
-		return d;
-	}
-	if (v.y >= height) {
-		return u;
-	}
-	return -2;
-}
-
-Vector Surface::world_pos(const Vector& v) {
-	return (surface_to_world * Matrix(v)).get_vector() + pos;
-}
-*/
-
 
 Level::Level() {
 	player_step_size = 0.2;
@@ -195,11 +98,13 @@ float tri_sign(Vector& p1, Vector& p2, Vector& p3) {
 }
 
 bool Level::move(bool forward) {
-	Vector step(cos(player_dir)*0.2, sin(player_dir)*0.2, 0);
+	Vector step(cos(player_dir)*player_step_size, sin(player_dir)*player_step_size, 0);
 	if (!forward) {
 		step *= -1;
 	}
 	Vector test_pos = (Vector)surface_pos + step;
+	
+	//return check_pos(test_pos, 0, false);
 	
 	Vector a1 = transform_n_to_s(m.points[m.triangles[current_surface].a], current_surface);
 	Vector b1 = transform_n_to_s(m.points[m.triangles[current_surface].b], current_surface);
@@ -208,21 +113,24 @@ bool Level::move(bool forward) {
 	bool ab_sign = tri_sign(test_pos, a1, b1) < 0.0;
 	bool bc_sign = tri_sign(test_pos, b1, c1) < 0.0;
 	bool ca_sign = tri_sign(test_pos, c1, a1) < 0.0;
-	bool majority_sign = (ab_sign + bc_sign + ca_sign) > 1;
 	
+	// todo store r or l handedness of the surface + points for optimization
+	double cross_z = (b1 - a1).cross((c1 - a1)).z;
+	bool majority_sign = (cross_z < 0);
+
 	if ((ab_sign == bc_sign) && (bc_sign == ca_sign)) {
 		Vector s_to_n_offset = (Vector)m.points[m.triangles[current_surface].a] - transform_s_to_n(a1, current_surface);
-		//printf("S TO N OFFSET: ");
-		//s_to_n_offset.print();
 		
 		surface_pos = (Vector)test_pos;
 		world_pos = transform_s_to_n(surface_pos, current_surface) + s_to_n_offset;
 		world_up = (Vector)m.normals[m.triangles[current_surface].normal];
-		
-		//surface_pos.print();
-		//world_pos.print();
+
 		return false;
 		
+	} else if ((majority_sign && ((ab_sign + bc_sign + ca_sign) == 1)) || (!majority_sign && ((ab_sign + bc_sign + ca_sign) == 2))) {
+		// todo if coming directly at one of the points
+		printf("AT POINT\n");
+		return false;
 	} else {
 		Vector edge1;
 		Vector edge2;
@@ -252,7 +160,7 @@ bool Level::move(bool forward) {
 				edge1 = b1 - a1;
 				edge2 = b2 - a2;
 				
-				printf("AB\n");
+				printf("AB===========================\n");
 			}
 		}else if (bc_sign != majority_sign) {
 			if (surfaces[current_surface].bc == -1) {
@@ -273,7 +181,7 @@ bool Level::move(bool forward) {
 				
 				edge1 = c1 - b1;
 				edge2 = c2 - b2;
-				printf("BC\n");
+				printf("BC===========================\n");
 			}
 		}else if (ca_sign != majority_sign) {
 			if (surfaces[current_surface].ca == -1) {
@@ -294,7 +202,7 @@ bool Level::move(bool forward) {
 				
 				edge1 = a1 - c1;
 				edge2 = a2 - c2;
-				printf("CA\n");
+				printf("CA===========================\n");
 			}
 		}
 		
@@ -305,28 +213,65 @@ bool Level::move(bool forward) {
 		double edge2_angle = atan2(edge2.y, edge2.x);
 		double delta_angle = edge2_angle - edge1_angle;
 
-		Vector i1 = edge2_anchor + (((Vector){cos(edge2_angle), sin(edge2_angle),0}) * edge_i_length);
+		Vector i1 = edge2_anchor + ((edge2.norm()) * edge_i_length);
+		
+		double l1 = (i - surface_pos).length();
+		double l2 = player_step_size - l1;
+		
+		
+		printf("A1:");
+		a1.print();
+		printf("B1:");
+		b1.print();
+		printf("C1:");
+		c1.print();
+		
+		Vector a2 = transform_n_to_s(m.points[m.triangles[current_surface].a], current_surface);
+		Vector b2 = transform_n_to_s(m.points[m.triangles[current_surface].b], current_surface);
+		Vector c2 = transform_n_to_s(m.points[m.triangles[current_surface].c], current_surface);
 
-		double l2 = step.length() - (i - surface_pos).length();
-
+		printf("A2:");
+		a2.print();
+		printf("B2:");
+		b2.print();
+		printf("C2:");
+		c2.print();
+		
+		printf("\nS:");
+		surface_pos.print();
+		
+		printf("\nI:");
+		i.print();
+		printf("I1:");
+		i1.print();
+		
+		//printf("L1: %f\n", l1);
+		//printf("L2: %f\n", l2);
+		//l2 = dmax(l2, 0.05);
+		
 		player_dir += delta_angle;
 		Vector e = i1 + (((Vector){cos(player_dir), sin(player_dir),0}) * l2);
+		
+		printf("\nE:");
+		e.print();
 		
 		surface_pos = (Vector)e;
 		world_pos = transform_s_to_n(surface_pos, current_surface) + s_to_n_offset;
 		world_up = (Vector)m.normals[m.triangles[current_surface].normal];
 		
-		edge1.print();
-		edge2.print();
+		//edge1.print();
+		//edge2.print();
 		
-		i.print();
-		printf("Edgeilen: %f    edge1ang: %f    edge2ang: %f   delta_angle: %f\n", edge_i_length, edge1_angle, edge2_angle, delta_angle);
-		i1.print();
+		//i.print();
+		//printf("edge_i_len: %f edge1_a: %f edge2_a: %f delta_angle: %f\n", edge_i_length, edge1_angle, edge2_angle, delta_angle);
+		//i1.print();
 	
-		surface_pos.print();
-		world_pos.print();
+		//surface_pos.print();
+		//world_pos.print();
+		
 		return true;
 	}
+	
 }
 
 /*

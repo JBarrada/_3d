@@ -14,7 +14,7 @@
 ThreeD threed;
 
 double camera_follow = 15.0;
-double camera_height = 8.0;
+double camera_height = 5.0;
 double smooth_speed = 10.0;
 
 Vector player_position(0, 0, 0);
@@ -116,14 +116,16 @@ void idle() {
 
 void keyboard(unsigned char key, int x, int y) {
 	
+	bool update_debug = false;
+	
 	if (key == 'w') {
 		//player_position += (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 		//Vector step(cos(player_direction)*0.2, sin(player_direction)*0.2, 0);
 		
-		test_level.move(true);
+		update_debug = test_level.move(true);
 		player_position = test_level.world_pos;
 		player_up = test_level.world_up;
-		player_position += ((Vector)player_up * 0.5);
+		player_position += ((Vector)player_up * 0.25);
 		//player_direction = test_level.player_dir;
 		/*
 		test_level.move(step);
@@ -136,10 +138,10 @@ void keyboard(unsigned char key, int x, int y) {
 		//player_position -= (IDENTITY.rotated_3d(player_up, player_direction).get_vector() * 0.2);
 		//Vector step(cos(player_direction)*-0.2, sin(player_direction)*-0.2, 0);
 		
-		test_level.move(false);
+		update_debug = test_level.move(false);
 		player_position = test_level.world_pos;
 		player_up = test_level.world_up;
-		player_position += ((Vector)player_up * 0.5);
+		player_position += ((Vector)player_up * 0.25);
 		//player_direction = test_level.player_dir;
 		/*
 		test_level.move(step * -1);
@@ -168,7 +170,10 @@ void keyboard(unsigned char key, int x, int y) {
 		hide_level = !hide_level;
 	}
 	
-	if (debug_triangle >= 0 && debug_triangle < debug.triangles_count) {
+	if (update_debug) {
+		debug_triangle = test_level.current_surface;
+		
+	//if (debug_triangle >= 0 && debug_triangle < debug.triangles_count) {
 		//test_level.m.normals[test_level.m.triangles[debug_triangle].normal].print();
 		Vector a = test_level.transform_n_to_s(debug.points[debug.triangles[debug_triangle].a], debug_triangle);
 		Vector b = test_level.transform_n_to_s(debug.points[debug.triangles[debug_triangle].b], debug_triangle);
@@ -261,9 +266,9 @@ void draw() {
 		}
 	}
 	
-	//shade(threed.depth_buffer);
+	shade(threed.depth_buffer);
 	toon(threed.depth_buffer);
-	//dither();
+	dither();
 }
 
 void load_model(char* file, Model* model) {

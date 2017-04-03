@@ -66,6 +66,7 @@ public:
 	Vector transform_n_to_s(Vector& v, int s);
 	Vector transform_s_to_n(Vector& v, int s);
 	
+	//bool check_pos(Vector test_pos, double d_angle, bool update);
 	bool move(bool forward);
 	
 	int find_neighbor(int p1, int p2, int avoid);
