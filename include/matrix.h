@@ -52,6 +52,8 @@ public:
 	void print();
 };
 
+Matrix align_vectors(Vector& a, Vector& b);
+
 extern Matrix IDENTITY;
 
 #endif

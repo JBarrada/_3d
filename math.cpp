@@ -34,6 +34,13 @@ double atan2(double y, double x) {
 	return u;
 }
 
+double acos(double x) {
+    double a=1.43+0.59*x; a=(a+(2+2*x)/a)/2;
+    double b=1.65-1.41*x; b=(b+(2-2*x)/b)/2;
+    double c=0.88-0.77*x; c=(c+(2-a)/c)/2;
+    return (8*(c+(2-a)/c)-(b+(2-2*x)/b))/6;
+}
+
 double dabs(double x) {
 	if (x < 0)
 		return -1*x;

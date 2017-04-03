@@ -142,59 +142,24 @@ void Level::generate_level() {
 		this->surfaces[t].ca = find_neighbor(m.triangles[t].c, m.triangles[t].a, t);
 	}
 	
-	this->s_to_n = new Matrix[m.normals_count];
-	
-	for (int n=0; n<m.normals_count; n++) {
-		this->s_to_n[n] = (Matrix)IDENTITY;
-		if (!(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == 1)) {
-			//Vector test_n = (Vector)m.normals[n];
-			//test_n *= -1;
-			//Vector axis = test_n.cross((Vector){0,0,1});
-			//double cos_angle = test_n.dot((Vector){0,0,1});
-			//this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, cos_angle, cos_angle+1);
-			/*
-			Vector axis = m.normals[n].cross((Vector){0,0,1});
-			double cos_angle = m.normals[n].dot((Vector){0,0,1});
-			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, cos_angle+1, cos_angle);
-			*/
-		}
-	}
-	
 	this->n_to_s = new Matrix[m.normals_count];
 	
-	/*
+	this->s_to_n = new Matrix[m.normals_count];
+	
 	Vector up(0,0,1);
 	for (int n=0; n<m.normals_count; n++) {
 		this->n_to_s[n] = (Matrix)IDENTITY;
+		this->s_to_n[n] = (Matrix)IDENTITY;
+		
 		if (!(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == 1) && !(m.normals[n].x == 0 && m.normals[n].y == 0 && m.normals[n].z == -1)) {
 			Vector axis = up.cross(m.normals[n]) * -1;
-			double cos_angle = up.dot(m.normals[n]) * -1;
+			double cos_angle = up.dot(m.normals[n]);
+			double angle = acos(cos_angle);
 			
-			printf("NORMAL : ");
-			m.normals[n].print();
+			this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, angle);
 			
-			printf("AXIS : ");
-			axis.print();
-			
-			printf("COS X : %f\n", cos_angle);
-			printf("\n");
-			
-			this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, cos_angle+1, cos_angle);
-			
-			//debug
-			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis * -1, cos_angle+1, cos_angle);
+			this->s_to_n[n] = this->s_to_n[n].rotated_3d(axis, -angle);
 		}
-	}
-	*/
-	
-	// maybe better https://www.gamedev.net/topic/61727-aligning-two-vectors/
-	for (int n=0; n<m.normals_count; n++) {
-		this->n_to_s[n] = (Matrix)IDENTITY;
-		
-		Vector axis(m.normals[n].y, -m.normals[n].x, 0);
-		double angle = m.normals.z;
-
-		this->n_to_s[n] = this->n_to_s[n].rotated_3d(axis, cos_angle+1, cos_angle);
 	}
 	
 }

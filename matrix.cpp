@@ -227,3 +227,18 @@ Matrix Matrix::translated(double x, double y, double z) {
 Matrix Matrix::translated(Vector v) {
 	return Matrix::translated(v.x, v.y, v.z);
 }
+
+Matrix align_vectors(Vector& a, Vector& b) {
+	if (a == b) {
+		return (Matrix)IDENTITY;
+	} else if (a == (b * -1)) {
+		Vector axis = b.cross((Vector){a.y, a.z, a.x});
+		double angle = M_PI;
+		return (Matrix)IDENTITY.rotated_3d(axis, angle);
+	} else {
+		Vector axis = b.cross(a) * -1;
+		double cos_angle = b.dot(a);
+		double angle = acos(cos_angle);
+		return (Matrix)IDENTITY.rotated_3d(axis, angle);	
+	}	
+}

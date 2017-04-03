@@ -63,7 +63,9 @@ void idle() {
 	d_player_position.z += (player_position.z - d_player_position.z) / smooth_speed * 2.0;
 	
 	
-	player.transform = IDENTITY.translated(d_player_position).rotated_3d(player_up, test_level.player_dir);
+	//player.transform = IDENTITY.translated(d_player_position).rotated_3d(player_up, test_level.player_dir);
+	Vector default_up(0,0,1);
+	player.transform = IDENTITY.translated(d_player_position) * align_vectors(default_up, player_up) * IDENTITY.rotated_3d_z(test_level.player_dir);
 	
 	// debug
 	debug_player.transform = IDENTITY.translated(test_level.surface_pos);
@@ -75,7 +77,8 @@ void idle() {
 	if (!(player_up.x == 0 && player_up.y == 0 && player_up.z == 1)) {
 		Vector axis = player_up.cross((Vector){0,0,1});
 		double cos_angle = player_up.dot((Vector){0,0,1});
-		camera_matrix = camera_matrix.rotated_3d(axis, cos_angle+1, cos_angle);
+		double angle = acos(cos_angle);
+		camera_matrix = camera_matrix.rotated_3d(axis, angle);
 	}
 	
 	camera_position = camera_matrix.get_vector() + (Vector)d_player_position;
