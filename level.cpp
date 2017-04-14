@@ -1,11 +1,13 @@
 #include "level.h"
 
 Level::Level() {
-	player_step_size = 0.2;
+	player_step_size = 0.1;
 }
 
 Level::Level(Model m) {
 	this->m = m;
+	
+	deco_count = 0;
 	
 	current_surface = 0;
 	surface_pos = (Vector){0,0,0};
@@ -13,7 +15,7 @@ Level::Level(Model m) {
 	world_up = (Vector){0,0,1};
 	
 	player_dir = 0.0;
-	player_step_size = 0.2;
+	player_step_size = 0.1;
 	
 	generate_level();
 	

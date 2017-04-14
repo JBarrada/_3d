@@ -7,6 +7,9 @@ Model::Model() {
 	points_count = 0;
 	normals_count = 0;
 	triangles_count = 0;
+	materials_count = 0;
+	
+	backface_cull = true;
 	
 	double identity_x[] = {1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1};
 	Matrix identity(4, 4, identity_x);
@@ -22,6 +25,8 @@ void Model::load_data(char* data, int length) {
 	normals_count = 0;
 	triangles_count = 0;
 	materials_count = 0;
+	
+	backface_cull = true;
 	
 	double identity_x[] = {1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1};
 	Matrix identity(4, 4, identity_x);
@@ -110,7 +115,11 @@ void Model::load_data(char* data, int length) {
 					memcpy(m.name, data+name_start, name_length);
 					
 					if (get_material(m.name) == -1) {
-						m.color = 0xff00ff;
+						if (m.name[0] == '#') {
+							m.color = atoi_hex(m.name+1);
+						} else {
+							m.color = 0xff00ff;
+						}
 						materials[materials_count] = m;
 						current_material = materials_count;
 						materials_count++;

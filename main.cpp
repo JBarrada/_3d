@@ -13,13 +13,15 @@
 
 ThreeD threed;
 
+bool keys[4] = {false, false, false, false};
+
 double camera_follow = 15.0;
 double camera_height = 5.0;
 double smooth_speed = 10.0;
+double camera_smooth_speed = 40.0;
 
 Vector player_position(0, 0, 0);
 Vector player_up(0, 0, 1);
-//double player_direction = 0;
 Vector camera_position(15,15,3);
 
 Vector d_camera_position(15,15,3);
@@ -48,13 +50,35 @@ bool hide_level = false;
 
 
 void idle() {
-	d_camera_position.x += (camera_position.x - d_camera_position.x) / smooth_speed;
-	d_camera_position.y += (camera_position.y - d_camera_position.y) / smooth_speed;
-	d_camera_position.z += (camera_position.z - d_camera_position.z) / smooth_speed;
+	bool update_debug = false;
+	if (keys[0]) {
+		update_debug = test_level.move(true);
+		player_position = test_level.world_pos;
+		player_up = test_level.world_up;
+		player_position += ((Vector)player_up * 0.25);
 
-	d_player_up.x += (player_up.x - d_player_up.x) / smooth_speed;
-	d_player_up.y += (player_up.y - d_player_up.y) / smooth_speed;
-	d_player_up.z += (player_up.z - d_player_up.z) / smooth_speed;
+	}
+	if (keys[2]) {
+		update_debug = test_level.move(false);
+		player_position = test_level.world_pos;
+		player_up = test_level.world_up;
+		player_position += ((Vector)player_up * 0.25);
+	}	
+	if (keys[1]) {
+		test_level.player_dir += 0.05;
+	}
+	if (keys[3]) {
+		test_level.player_dir -= 0.05;
+	}
+	
+	
+	d_camera_position.x += (camera_position.x - d_camera_position.x) / camera_smooth_speed;
+	d_camera_position.y += (camera_position.y - d_camera_position.y) / camera_smooth_speed;
+	d_camera_position.z += (camera_position.z - d_camera_position.z) / camera_smooth_speed;
+
+	d_player_up.x += (player_up.x - d_player_up.x) / camera_smooth_speed;
+	d_player_up.y += (player_up.y - d_player_up.y) / camera_smooth_speed;
+	d_player_up.z += (player_up.z - d_player_up.z) / camera_smooth_speed;
 	
 	d_player_up.norm();
 	
@@ -112,6 +136,23 @@ void idle() {
 	//printf("%f\n", threed.np_d);
 	
 	render();
+}
+
+void keyboard_down(unsigned char key, int x, int y) {
+	switch(key) {
+		case 'w': keys[0] = true; break;
+		case 'a': keys[1] = true; break;
+		case 's': keys[2] = true; break;
+		case 'd': keys[3] = true; break;
+	}
+}
+void keyboard_up(unsigned char key, int x, int y) {
+	switch(key) {
+		case 'w': keys[0] = false; break;
+		case 'a': keys[1] = false; break;
+		case 's': keys[2] = false; break;
+		case 'd': keys[3] = false; break;
+	}
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -251,6 +292,10 @@ void draw() {
 	if (!hide_level)
 		threed.draw_model_3d(test_level.m);
 	
+	for (int i=0; i < test_level.deco_count; i++) {
+		threed.draw_model_3d(test_level.deco[i]);
+	}
+	
 	//threed.draw_model_3d(monkey);
 	
 	threed.draw_model_3d(x_cube);
@@ -302,71 +347,32 @@ int main() {
 	x_cube = create_box((Vector){1,0,0}, 0.2, 0.2, 0.2, 0x0000ff);
 	y_cube = create_box((Vector){0,1,0}, 0.2, 0.2, 0.2, 0x00ff00);
 	z_cube = create_box((Vector){0,0,1}, 0.2, 0.2, 0.2, 0xff0000);
-	
-	/*
-	Model cube = create_box((Vector){-4,4,-4}, 8, 8, 8, 0xffffff);
-	cube.materials_count = 4;
-	cube.materials = new Material[4];
-	char test_mtl[] = "TEST";
-	cube.materials[0] = (Material) {test_mtl, 0xffffff};
-	cube.materials[1] = (Material) {test_mtl, 0x0000ff};
-	cube.materials[2] = (Material) {test_mtl, 0x00ff00};
-	cube.materials[3] = (Material) {test_mtl, 0xff0000};
-	cube.triangles[3].mtl = 1;
-	
-	test_level = Level(cube);
-	test_level.current_surface = 3;
-	//test_level.m.print();
-	*/
+
 	
 	//debug_player = create_box((Vector){0,0,0}, 0.5, 0.5, 0.5, 0xff0000);
 	
-	//Model debug;
-	/*
-	debug.points_count = 5;
-	debug.normals_count = 3;
-	debug.triangles_count = 3;
-	debug.materials_count = 2;
-	
-	debug.points = new Vector[debug.points_count];
-	debug.points[0] = (Vector){0,0,0};
-	debug.points[1] = (Vector){8,8,0};
-	debug.points[2] = (Vector){0,8,0};
-	debug.points[3] = (Vector){0,0,-8};
-	debug.points[4] = (Vector){8,8,-8};
-	
-	debug.normals = new Vector[debug.normals_count];
-	debug.normals[0] = calculate_surface_normal(debug.points[0], debug.points[1], debug.points[2]);
-	debug.normals[1] = calculate_surface_normal(debug.points[0], debug.points[2], debug.points[3]);
-	debug.normals[2] = calculate_surface_normal(debug.points[1], debug.points[4], debug.points[2]);
-	
-	debug.triangles = new Triangle[debug.triangles_count];
-	debug.triangles[0] = (Triangle) {0, 1, 2, 0, 0};
-	debug.triangles[1] = (Triangle) {0, 2, 3, 1, 1};
-	debug.triangles[2] = (Triangle) {1, 4, 2, 2, 1};
-	
-	char test_mtl[] = "TEST";
-	debug.materials = new Material[2];
-	debug.materials[0] = (Material) {test_mtl, 0xff00ff};
-	debug.materials[1] = (Material) {test_mtl, 0xffff00};
-	*/
-	
+
 	//debug = create_box((Vector){-4,4,-4}, 8, 8, 8, 0xffffff);
 	
-	load_model("pig.obj", &debug);
+	load_model("test_level.obj", &debug);
 	test_level = Level(debug);
 	//test_level.current_surface = 3;
+	
+	test_level.deco_count = 1;
+	test_level.deco = new Model[1];
+	load_model("test_level_grass.obj", &test_level.deco[0]);
+	//test_level.deco[0].backface_cull = true;
 	
 	//debug_init();
 	
 	
-	Matrix p_matrix = projection_persp_gl(90.0, 100.0, 0.1, 320.0/200.0);
+	Matrix p_matrix = projection_persp_gl(120.0, 100.0, 0.1, 320.0/200.0);
 	Matrix v_matrix = look_at_camera(camera_position, (Vector){0,0,0}, (Vector){0,0,1});
 	
 	threed.init(p_matrix, v_matrix, 3.2, 2.0);
 	threed.backface_cull = true;
 	
-	gfx_init(idle, draw, keyboard);
+	gfx_init(idle, draw, keyboard_down, keyboard_up);
 	
 	return 0;
 }

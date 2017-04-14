@@ -52,6 +52,9 @@ public:
 	Matrix* s_to_n;
 	Matrix* n_to_s;
 	
+	Model* deco;
+	int deco_count;
+	
 	Level();
 	Level(Model m);
 	

@@ -206,7 +206,7 @@ void ThreeD::draw_model_3d(const Model& m) {
 	
 	// frustum clipping
 	for (int i=0; i < m.triangles_count; i++) {
-		if ((camera_angles[m.triangles[i].normal] >= 0.4 && backface_cull) || (!backface_cull)) {
+		if ((camera_angles[m.triangles[i].normal] >= 0.4 && backface_cull) || (!backface_cull) || (!m.backface_cull)) {
 			int projected[] = {m.triangles[i].a, m.triangles[i].b, m.triangles[i].c};
 
 			int num_behind = 0;

@@ -42,6 +42,24 @@ bool is_numeric(char c) {
 	return false;
 }
 
+bool is_hex(char c) {
+	switch (c) {
+		case 'a': 
+		case 'A': 
+		case 'b': 
+		case 'B': 
+		case 'c': 
+		case 'C': 
+		case 'd': 
+		case 'D': 
+		case 'e': 
+		case 'E': 
+		case 'f': 
+		case 'F': return true;
+	}
+	return is_numeric(c);
+}
+
 bool starts_with(char* data, char* match) {
 	for (int i=0; i < sizeof(match); i++) {
 		if (data[i] != match[i])
@@ -98,6 +116,35 @@ int next_char(char* data, char c, int i) {
 		i++;
 	}
 	return i;
+}
+
+uint32_t atoi_hex(char* data) {
+	uint32_t value = 0;
+	
+	int i = 0;
+	while (!is_whitespace(data[i]) && is_hex(data[i])) {
+		switch (data[i]) {		
+			case '0': value *= 16; value += 0; break;
+			case '1': value *= 16; value += 1; break;
+			case '2': value *= 16; value += 2; break;
+			case '3': value *= 16; value += 3; break;
+			case '4': value *= 16; value += 4; break;
+			case '5': value *= 16; value += 5; break;
+			case '6': value *= 16; value += 6; break;
+			case '7': value *= 16; value += 7; break;
+			case '8': value *= 16; value += 8; break;
+			case '9': value *= 16; value += 9; break;
+			case 'a': case 'A': value *= 16; value += 10; break;
+			case 'b': case 'B': value *= 16; value += 11; break;
+			case 'c': case 'C': value *= 16; value += 12; break;
+			case 'd': case 'D': value *= 16; value += 13; break;
+			case 'e': case 'E': value *= 16; value += 14; break;
+			case 'f': case 'F': value *= 16; value += 15; break;
+		}
+		i++;
+	}
+	
+	return value;
 }
 
 double atod(char* data) {

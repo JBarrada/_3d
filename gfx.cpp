@@ -15,7 +15,7 @@ uint8_t bayer8x8[] = {	 0,48,12,60, 3,51,15,63,
 
 void (*draw_function)();
 
-void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y)) {
+void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard_down)(unsigned char key, int x, int y), void (*keyboard_up)(unsigned char key, int x, int y)) {
 	draw_function = draw;
 	
 	/*
@@ -54,7 +54,9 @@ void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key
 	glutCreateWindow("!");
 	glutIdleFunc(idle);
 	glutDisplayFunc(render);
-	glutKeyboardFunc(keyboard);
+	//glutKeyboardFunc(keyboard);
+	glutKeyboardFunc(keyboard_down);
+	glutKeyboardUpFunc(keyboard_up);
 	
 	glutMainLoop();
 }
@@ -99,7 +101,7 @@ void render() {
 	draw_function();
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawPixels(SCREEN_W, SCREEN_H, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, screen_buffer);
+	glDrawPixels(SCREEN_W, SCREEN_H, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, screen_buffer);
 	glutSwapBuffers();
 }
 

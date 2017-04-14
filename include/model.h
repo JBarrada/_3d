@@ -30,6 +30,8 @@ public:
 	
 	int get_material(char*);
 	
+	bool backface_cull;
+	
 	int points_count;
 	int normals_count;
 	int triangles_count; 

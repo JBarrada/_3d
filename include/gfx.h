@@ -16,7 +16,7 @@ struct point {
 	double x, y;
 };
 	
-void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard)(unsigned char key, int x, int y));
+void gfx_init(void (*idle)(), void (*draw)(), void (*keyboard_down)(unsigned char key, int x, int y), void (*keyboard_up)(unsigned char key, int x, int y));
 
 uint8_t get_byte_color(uint8_t r, uint8_t g, uint8_t b);
 uint32_t get_32bit_color(uint8_t r, uint8_t g, uint8_t b);
